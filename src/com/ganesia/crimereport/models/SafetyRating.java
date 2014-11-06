@@ -167,5 +167,18 @@ public class SafetyRating {
 	public void setAdditionalProperty(String name, Object value) {
 		this.additionalProperties.put(name, value);
 	}
+	
+//	public String toString() {
+//		Map<String, List<CrimeItem>> hm = new HashMap<String, List<CrimeItem>>();
+//		String result = "";
+//		result = this.safetyRating + "/n" + this.safetyRatingDescription;
+//		for (Object c : crimeList) {
+//			if (c.getClass().equals(String.class)) {
+//				// type of the crime
+//			}
+//			
+//		}
+//		return "";
+//	}
 
 }
