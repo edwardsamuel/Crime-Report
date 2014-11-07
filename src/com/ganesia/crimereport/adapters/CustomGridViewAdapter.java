@@ -2,9 +2,9 @@ package com.ganesia.crimereport.adapters;
 
 import java.util.ArrayList;
 
+import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.models.TopCrime;
 
-import android.R;
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -23,7 +23,7 @@ public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
 		this.context = context;
 		this.layoutResourceId = layoutResourceId;
 		this.data = data;
-	}
+	}	
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
@@ -36,8 +36,8 @@ public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
 			row = inflater.inflate(layoutResourceId, parent, false);
 			
 			holder = new RecordHolder();
-			//holder.txtCrimeTitle = (TextView) row.findViewById(R.id.crime_title);
-			//holder.txtCrimeCount = (TextView) row.findViewById(R.id.crime_count);
+			holder.txtCrimeTitle = (TextView) row.findViewById(R.id.crime_title);
+			holder.txtCrimeCount = (TextView) row.findViewById(R.id.crime_count);
 			row.setTag(holder);			
 		}
 		else{
@@ -45,8 +45,8 @@ public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
 		}
 		
 		TopCrime topCrime = data.get(position);
-		//holder.txtCrimeTitle.setText(topCrime.getCrimeTitle());
-		//holder.txtCrimeCount.setText(topCrime.getCrimeCount());
+		holder.txtCrimeTitle.setText(topCrime.getCrimeTitle());
+		holder.txtCrimeCount.setText(topCrime.getCrimeCount());
 		
 		return row;
 	}

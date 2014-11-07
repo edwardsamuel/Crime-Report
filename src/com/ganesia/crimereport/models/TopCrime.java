@@ -5,8 +5,7 @@ public class TopCrime {
 	String crimeTitle;
 	String crimeCount;
 	
-	public TopCrime(String crimeTitle, String crimeCount) {
-		super();
+	public TopCrime(String crimeTitle, String crimeCount) {		
 		this.crimeTitle = crimeTitle;
 		this.crimeCount = crimeCount;
 	}
