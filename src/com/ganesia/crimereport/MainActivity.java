@@ -1,12 +1,16 @@
 package com.ganesia.crimereport;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.example.crimeda.R;
+import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.adapters.CrimeInterface;
 import com.ganesia.crimereport.adapters.SafetyRatingInterface;
 import com.ganesia.crimereport.models.Crime;
+import com.ganesia.crimereport.models.CrimeItem;
 import com.ganesia.crimereport.models.SafetyRating;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -17,6 +21,7 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -88,9 +93,19 @@ public class MainActivity extends Activity {
 			public void success(SafetyRating arg0, Response arg1) {
 				// TODO Auto-generated method stub
 				TextView text = (TextView) findViewById(R.id.API2);
-				text.setText("success");
+				String result="";
+				// text.setText(arg0.getNearestCrimeList().values().toString());
+				Collection<ArrayList<CrimeItem>> temp = arg0.getNearestCrimeList().values();
+				for (Iterator iterator = temp.iterator(); iterator.hasNext();) {
+					Log.d("coba","iterator");
+					ArrayList<CrimeItem> crimeList = (ArrayList<CrimeItem>) iterator.next();
+					for (CrimeItem e : crimeList) {
+						Log.d("coba","crimelist");
+						result += "\n" + e.getCrimeType();
+					}
+				}
+				text.setText(result);
 			}
-			
 		});
 		
 	}
