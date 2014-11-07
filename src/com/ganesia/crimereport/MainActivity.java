@@ -1,13 +1,17 @@
 package com.ganesia.crimereport;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.example.crimeda.R;
+import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.adapters.CrimeInterface;
+import com.ganesia.crimereport.adapters.CustomGridViewAdapter;
 import com.ganesia.crimereport.models.Crime;
+import com.ganesia.crimereport.models.TopCrime;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -17,10 +21,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.GridView;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	Crime CrimeData;
+	GridView gridView;
+	ArrayList<TopCrime> topCrimeList = new ArrayList<TopCrime>();
+	CustomGridViewAdapter customGridViewAdapter;
+	private SlidingUpPanelLayout mLayout;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -28,7 +38,19 @@ public class MainActivity extends Activity {
 		TextView text = (TextView) findViewById(R.id.content);
 		text.setText("mulai");
 		
-		consumeReportAPI();
+		//consumeReportAPI();
+		
+		mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+		mLayout.setAnchorPoint(0.3f);
+        mLayout.expandPanel(0.3f);
+        
+		topCrimeList.add(new TopCrime("Thef", "1237"));
+		topCrimeList.add(new TopCrime("Battery", "726"));
+		topCrimeList.add(new TopCrime("Narcotics", "1820"));
+		
+		gridView = (GridView) findViewById(R.id.gridview);
+		customGridViewAdapter = new CustomGridViewAdapter(this, R.layout.activity_top3row, topCrimeList);
+		gridView.setAdapter(customGridViewAdapter);
 	}
 	
 	protected void consumeReportAPI() {
