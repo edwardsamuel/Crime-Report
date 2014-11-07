@@ -3,7 +3,7 @@ package com.ganesia.crimereport;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.example.crimeda.R;
+import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.adapters.CrimeInterface;
 import com.ganesia.crimereport.models.Crime;
 import com.google.gson.Gson;

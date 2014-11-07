@@ -3,11 +3,6 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry exported="true" kind="lib" path="/Users/abrahamks/WatchOverMe/external-lib/gson-2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="/Users/abrahamks/WatchOverMe/external-lib/okhttp-2.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="/Users/abrahamks/WatchOverMe/external-lib/okhttp-urlconnection-2.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="/Users/abrahamks/WatchOverMe/external-lib/okio-1.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="/Users/abrahamks/WatchOverMe/external-lib/retrofit-1.7.1.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="output" path="bin/classes"/>
