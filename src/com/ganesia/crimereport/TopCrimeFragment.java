@@ -23,24 +23,18 @@ public class TopCrimeFragment extends Fragment{
 	CustomGridViewAdapter customGridViewAdapter;
 	
 	@Override
-	   public View onCreateView(LayoutInflater inflater,
+	   public View onCreateView(LayoutInflater inflater,	
 	      ViewGroup container, Bundle savedInstanceState) {
 		
-		      topCrimeList.add(new TopCrime("Thef", "1237"));
+		      topCrimeList.add(new TopCrime("Theft", "1237"));
 		      topCrimeList.add(new TopCrime("Battery", "726"));
 		      topCrimeList.add(new TopCrime("Narcotics", "1820"));
 	
 		      View vGridView = inflater.inflate(R.layout.fragment_main, container, false);
 		      gridView = (GridView) vGridView.findViewById(R.id.gridview);
-		      customGridViewAdapter = new CustomGridViewAdapter(getActivity().getApplicationContext(), R.layout.activity_top3row, topCrimeList);
+		      customGridViewAdapter = new CustomGridViewAdapter(getActivity(), topCrimeList);
 		      gridView.setAdapter(customGridViewAdapter);
 		      
-		      Log.d("coba", "topcrimelist");
-		      
-		      /**
-		       * Inflate the layout for this fragment
-		       */
-		      return inflater.inflate(
-		      R.layout.fragment_main, container, false);
+		      return vGridView;
 		   }
 }

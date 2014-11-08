@@ -14,14 +14,17 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
-	Context context;
-	int layoutResourceId;
-	ArrayList<TopCrime> data = new ArrayList<TopCrime>();
+	private Activity context;
+	private ArrayList<TopCrime> data = new ArrayList<TopCrime>();
 	
-	public CustomGridViewAdapter(Context context, int layoutResourceId, ArrayList<TopCrime> data){
-		super(context, layoutResourceId, data);
+	static class ViewHolder {
+		  TextView txtCrimeTitle;
+		  TextView txtCrimeCount;
+	}
+	
+	public CustomGridViewAdapter(Activity context, ArrayList<TopCrime> data){
+		super(context, R.layout.activity_top3row, data);
 		this.context = context;
-		this.layoutResourceId = layoutResourceId;
 		this.data = data;
 	}	
 	
@@ -29,21 +32,20 @@ public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// TODO Auto-generated method stub
 		View row = convertView;
-		RecordHolder holder = null;
 		
 		if(row == null){
-			LayoutInflater inflater = ((Activity) context).getLayoutInflater();
-			row = inflater.inflate(layoutResourceId, parent, false);
+			LayoutInflater inflater = context.getLayoutInflater();
+			row = inflater.inflate(R.layout.activity_top3row, null);
 			
-			holder = new RecordHolder();
-			holder.txtCrimeTitle = (TextView) row.findViewById(R.id.crime_title);
-			holder.txtCrimeCount = (TextView) row.findViewById(R.id.crime_count);
-			row.setTag(holder);			
-		}
-		else{
-			holder = (RecordHolder) row.getTag();			
+			// configure RecordHolder
+			ViewHolder viewHolder = new ViewHolder();
+			viewHolder.txtCrimeTitle = (TextView) row.findViewById(R.id.crime_title);
+			viewHolder.txtCrimeCount = (TextView) row.findViewById(R.id.crime_count);
+			row.setTag(viewHolder);			
 		}
 		
+		// fill data
+		ViewHolder holder = (ViewHolder) row.getTag();
 		TopCrime topCrime = data.get(position);
 		holder.txtCrimeTitle.setText(topCrime.getCrimeTitle());
 		holder.txtCrimeCount.setText(topCrime.getCrimeCount());
@@ -51,8 +53,4 @@ public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
 		return row;
 	}
 	
-	static class RecordHolder {
-		  TextView txtCrimeTitle;
-		  TextView txtCrimeCount;
-	}
 }

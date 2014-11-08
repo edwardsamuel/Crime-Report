@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#bbbbbb"
     android:orientation="vertical"
     android:clickable="true"
     android:focusable="false"
@@ -14,11 +13,12 @@
 		android:layout_height="48dp"
 		android:gravity="center"
 		android:text="@string/top_crime"
-		android:textSize="18sp" />
+		android:textSize="18sp"
+        android:textStyle="bold" />
     
     <GridView
 		android:id="@+id/gridview"
-		android:background="#DA45F5"
+		android:background="#FFFFFF"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:columnWidth="90dp"

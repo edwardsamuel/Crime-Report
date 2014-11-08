@@ -18,9 +18,7 @@ public class MainActivity extends FragmentActivity {
 		setContentView(R.layout.activity_main);
 		TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
 		
-		Log.d("coba", "oncreate main activity");
 		//consumeReportAPI();
-		
 	}
 	
 //	protected void consumeReportAPI() {

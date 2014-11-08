@@ -12,8 +12,8 @@
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
 	    android:gravity="bottom"
-	    sothree:anchorPoint="0.3"
-	    sothree:panelHeight="68dp"
+	    sothree:anchorPoint="0.2"
+	    sothree:panelHeight="48dp"
 	    sothree:shadowHeight="4dp"
         sothree:paralaxOffset="100dp">
         

@@ -11,9 +11,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:textSize="18sp"
+        android:gravity="center_horizontal|center"
+        android:text="crime count"
+        android:textAlignment="center"
         android:textColor="#000000"
-        android:text="crimecount" >
+        android:textSize="18sp" >
+
     </TextView>
     
     <TextView
@@ -21,9 +24,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
+        android:gravity="center_horizontal|center"
+        android:text="crime title"
+        android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="18sp"
-        android:textColor="#000000" 
-        android:text="crimetitle">
+        android:textStyle="bold" >
+
     </TextView>
 
 </LinearLayout>
