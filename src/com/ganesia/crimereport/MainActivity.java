@@ -1,10 +1,13 @@
 package com.ganesia.crimereport;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.adapters.CrimeInterface;
@@ -21,7 +24,6 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -44,7 +46,7 @@ public class MainActivity extends Activity {
 		.setEndpoint("http://crimedb.watchovermeapp.com:8080/crimereport/rs/data")
 		.build();
 		
-		consumeReportAPI("2014-10-27");
+//		consumeReportAPI("2014-10-27");
 		consumeSafetyRatingAPI(41.883522, -87.627788);
 	}
 	
@@ -95,15 +97,35 @@ public class MainActivity extends Activity {
 				TextView text = (TextView) findViewById(R.id.API2);
 				String result="";
 				// text.setText(arg0.getNearestCrimeList().values().toString());
-				Collection<ArrayList<CrimeItem>> temp = arg0.getNearestCrimeList().values();
-				for (Iterator iterator = temp.iterator(); iterator.hasNext();) {
-					Log.d("coba","iterator");
-					ArrayList<CrimeItem> crimeList = (ArrayList<CrimeItem>) iterator.next();
-					for (CrimeItem e : crimeList) {
-						Log.d("coba","crimelist");
-						result += "\n" + e.getCrimeType();
-					}
+				HashMap<String, ArrayList<CrimeItem>> nearestCrimeList = arg0.getNearestCrimeList();
+				Set<String> keys = nearestCrimeList.keySet();
+				result += "\n" + "Crimes around your location:";
+				for (Iterator keyIterator = keys.iterator(); keyIterator.hasNext();) {
+					// iterate to get values from every key
+					String key = (String) keyIterator.next();
+					ArrayList<CrimeItem> crimeList = nearestCrimeList.get(key);
+					result += "\n" + key + " (" + crimeList.size() + ")";
 				}
+				// filter
+				result += "\n ----" + Calendar.getInstance().getTime().toString();
+				result += "\n" + "Trending crimes around this time " + "(" + String.valueOf(Calendar.getInstance().getTimeInMillis()) + "):";
+				HashMap<String, ArrayList<CrimeItem>> trendingCrimeList = arg0.getTrendingCrimeAroundUserTimedate(7200*1000);
+				Set<String> keys2 = trendingCrimeList.keySet();
+				result += "\n" + "Crimes around your location:";
+				for (Iterator keyIterator = keys2.iterator(); keyIterator.hasNext();) {
+					// iterate to get values from every key
+					String key2 = (String) keyIterator.next();
+					ArrayList<CrimeItem> crimeList = nearestCrimeList.get(key2);
+					result += "\n" + key2 + " (" + trendingCrimeList.size() + ")";
+				}
+				
+//				for (Iterator iterator = temp.iterator(); iterator.hasNext();) {
+//					ArrayList<CrimeItem> crimeList = (ArrayList<CrimeItem>) iterator.next();
+//					
+////					for (CrimeItem e : crimeList) {
+////						result += "\n" + e.getCrimeType() + "--" + e.getType() + "--"  + e.isArrest();
+////					}
+//				}
 				text.setText(result);
 			}
 		});
