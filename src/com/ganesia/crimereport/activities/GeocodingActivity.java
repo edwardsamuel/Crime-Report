@@ -1,109 +1,125 @@
 package com.ganesia.crimereport.activities;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import android.app.Activity;
-import android.content.Context;
-import android.location.Address;
-import android.location.Geocoder;
+import android.app.SearchManager;
+import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ganesia.crimereport.R;
-import com.ganesia.crimereport.models.CustomAddress;
+import com.ganesia.crimereport.providers.PlaceProvider;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class GeocodingActivity extends Activity {
-	
-	public static final int MAX_RESULTS = 30;  // Max number of results returned
-    private static final String TAG = "GeocoderDemo";
+public class GeocodingActivity extends FragmentActivity implements
+		LoaderCallbacks<Cursor> {
 
-    Context mContext;
-    Button mRunGeocoderWithBoundingBox;
-    Button mRunGeocoder;
-    TextView mResults;
-    EditText mInput;
+	public static final int MAX_RESULTS = 30; // Max number of results returned
+	private static final String TAG = "GeocoderDemo";
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_geocoding);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_geocoding);
+		handleIntent(getIntent());
 
-        mContext = this;
+	}
 
-        mRunGeocoderWithBoundingBox = (Button) findViewById(R.id.btnRunGeocoderBoundingBox);
-        mRunGeocoder = (Button) findViewById(R.id.btnRunGeocoder);
-        mResults = (TextView) findViewById(R.id.txtResults);
-        mInput = (EditText) findViewById(R.id.editTxtInput);
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+		handleIntent(intent);
+	}
 
-        // Move cursor to end of EditText
-        mInput.setSelection(mInput.getText().length());
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
 
-        mRunGeocoderWithBoundingBox.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                runGeocoder(true);
-            }
-        });
+		return true;
+	}
 
-        mRunGeocoder.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                runGeocoder(false);
-            }
-        });
-    }
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		switch(item.getItemId()){
+			case R.id.action_search:	
+				onSearchRequested();
+				break;
+		}	
+		return super.onMenuItemSelected(featureId, item);
+	}
 
-    /**
-     * Runs the geocoder
-     * @param withBoundingBox true if a bounding box should be used, false if it should not
-     */
-    private void runGeocoder(boolean withBoundingBox) {
-        Geocoder gc = new Geocoder(mContext);
+	private void handleIntent(Intent intent) {
+		Toast.makeText(this, "LOG", Toast.LENGTH_LONG).show();
+		if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
+			doSearch(intent.getStringExtra(SearchManager.QUERY));
+		} else if (intent.getAction().equals(Intent.ACTION_VIEW)) {
+			getPlace(intent.getStringExtra(SearchManager.EXTRA_DATA_KEY));
+		}
+	}
 
-        Log.d(TAG, "Gecoder.isPresent = " + gc.isPresent());
+	private void doSearch(String query) {
+		Bundle data = new Bundle();
+		data.putString("query", query);
+		getSupportLoaderManager().restartLoader(0, data, this);
+	}
 
-        try {
-            // Clear previous results
-            mResults.setText("");
+	private void getPlace(String query) {
+		Bundle data = new Bundle();
+		data.putString("query", query);
+		getSupportLoaderManager().restartLoader(1, data, this);
+	}
 
-            List<CustomAddress> addresses = new ArrayList<CustomAddress>();
-            List<Address> androidTypeAddresses;
-            StringBuilder sb = new StringBuilder();
+	@Override
+	public Loader<Cursor> onCreateLoader(int arg0, Bundle bundle) {
+		CursorLoader cLoader = null;
+		if (arg0 == 0) {
+			cLoader = new CursorLoader(getBaseContext(),
+					PlaceProvider.SEARCH_URI, null, null,
+					new String[] { bundle.getString("query") }, null);
+		} else if (arg0 == 1) {
+			cLoader = new CursorLoader(getBaseContext(),
+					PlaceProvider.DETAILS_URI, null, null,
+					new String[] { bundle.getString("query") }, null);
+		}
+		return cLoader;
+	}
 
-            if (withBoundingBox) {
-                androidTypeAddresses = gc.getFromLocationName(mInput.getText().toString(),
-                        MAX_RESULTS,
-                        27.6236434,  // Tampa Bay Area, FL
-                        -82.8511308,
-                        28.3251809,
-                        -82.0559399);
-            } else {
-                androidTypeAddresses = gc.getFromLocationName(mInput.getText().toString(),
-                        MAX_RESULTS);
-            }
+	@Override
+	public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
+		// showLocations(c);
+	}
 
-            // Copy addresses to custom address object, to help with formatting output
-            for (Address androidAddress : androidTypeAddresses) {
-                addresses.add(new CustomAddress(androidAddress));
-            }
+	@Override
+	public void onLoaderReset(Loader<Cursor> arg0) {
+		// TODO Auto-generated method stub
+	}
 
-            // Add results to StringBuilder to be output to UI
-            for (CustomAddress customAddress : addresses) {
-                sb.append('\u2022' + " ");
-                sb.append(customAddress.toString());
-                sb.append(System.getProperty("line.separator"));
-            }
-
-            // Show results in UI
-            mResults.setText(sb.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+	private void showLocations(Cursor c) {
+		MarkerOptions markerOptions = null;
+		LatLng position = null;
+		// mGoogleMap.clear();
+		while (c.moveToNext()) {
+			markerOptions = new MarkerOptions();
+			position = new LatLng(Double.parseDouble(c.getString(1)), Double.parseDouble(c.getString(2)));
+			markerOptions.position(position);
+			markerOptions.title(c.getString(0));
+			// mGoogleMap.addMarker(markerOptions);
+		}
+		if (position != null) {
+			CameraUpdate cameraPosition = CameraUpdateFactory
+					.newLatLng(position);
+			// mGoogleMap.animateCamera(cameraPosition);
+		}
+	}
 }
