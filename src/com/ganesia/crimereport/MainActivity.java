@@ -28,6 +28,8 @@ import com.ganesia.crimereport.models.SafetyRating;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
 import android.support.v4.app.FragmentActivity;
@@ -35,6 +37,8 @@ import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,7 +62,8 @@ public class MainActivity extends FragmentActivity {
     private TileOverlay mOverlay;
     private RestAdapter restAdapter;
     private Crime CrimeData;
-
+    private boolean flip = false;
+    
     private static final int ALT_HEATMAP_RADIUS = 20;
        
 	private static final LatLng CHICAGO = new LatLng(41.8337329,-87.7321555);
@@ -176,6 +181,36 @@ public class MainActivity extends FragmentActivity {
 		
 		consumeReportAPI("2014-10-27");
 		consumeSafetyRatingAPI(41.883522, -87.627788);
+		
+		
+		Button b = (Button) findViewById(R.id.button1);
+		b.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (!flip) {
+					TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
+					FragmentManager fm = getFragmentManager();
+					FragmentTransaction transaction = fm.beginTransaction();
+					transaction.replace(R.id.fragment_main, topCrimeFrag);
+					transaction.addToBackStack(null);
+					transaction.commit();
+					Toast toast = Toast.makeText(getApplicationContext(), "true", Toast.LENGTH_LONG);
+					toast.show();
+					flip = true;
+				} else {
+					SafetyRatingFragment safetyRatingFrag = new SafetyRatingFragment();
+					FragmentManager fm = getFragmentManager();
+					FragmentTransaction transaction = fm.beginTransaction();
+					transaction.replace(R.id.fragment_main, safetyRatingFrag);
+					transaction.addToBackStack(null);
+					transaction.commit();
+					flip = false;
+					
+				}
+			}
+		});
+		
 	}
 	
 	// Datasets from http://data.gov.au
