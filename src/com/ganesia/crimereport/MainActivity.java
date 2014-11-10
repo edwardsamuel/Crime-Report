@@ -3,6 +3,7 @@ package com.ganesia.crimereport;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Scanner;
 
@@ -15,12 +16,17 @@ import android.support.v4.app.FragmentActivity;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
@@ -31,7 +37,7 @@ public class MainActivity extends FragmentActivity {
 	private SlidingUpPanelLayout mLayout;
 	private GoogleMap mMap;
 	private HeatmapTileProvider mProvider;
-    private TileOverlay mOverlay;
+    private TileOverlay mOverlay; 
 
     private static final int ALT_HEATMAP_RADIUS = 20;
        
@@ -94,7 +100,56 @@ public class MainActivity extends FragmentActivity {
 
 		TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
 		
+		// add markers
+		mMap.addMarker(new MarkerOptions()
+			    .position(new LatLng(-25, 143))
+			    .title("Hello world").snippet("aaaaaaaaaaaaaa"));
+				
 		//consumeReportAPI();
+		
+		// Setting a custom info window adapter for the google map
+		mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
+ 
+            // Use default InfoWindow frame
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+ 
+            // Defines the contents of the InfoWindow
+            @Override
+            public View getInfoContents(Marker arg0) {
+ 
+                // Getting view from the layout file info_window_layout
+                View v = getLayoutInflater().inflate(R.layout.info_window, null);
+ 
+                // Getting the position from the marker
+                LatLng latLng = arg0.getPosition();
+ 
+                // Getting reference to the TextView to set crime type
+                TextView crimeType = (TextView) v.findViewById(R.id.info_crime_type);
+ 
+                // Getting reference to the TextView to set crime note
+                TextView crimeNote = (TextView) v.findViewById(R.id.info_crime_note);
+                
+                // Getting reference to the TextView to set crime date
+                TextView crimeDate = (TextView) v.findViewById(R.id.info_crime_date);
+ 
+                // Setting the crime type
+                crimeType.setText("Robbery");
+ 
+                // Setting the crime note
+                crimeNote.setText("ARMED: Handgun");
+
+                // Setting the crime date
+                crimeDate.setText("Sat, 18 Oct 2014 21:50:00 GMT");
+                
+                // Returning the view containing InfoWindow contents
+                return v;
+ 
+            }
+        });
+		
 	}
 	
 	// Datasets from http://data.gov.au
@@ -163,5 +218,5 @@ public class MainActivity extends FragmentActivity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
+	}	
 }
