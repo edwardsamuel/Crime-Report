@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.android.gms.maps.model.LatLng;
 public class Crime {
 	
 	private List<CrimeItem> crimeList = new ArrayList<CrimeItem>();
@@ -112,5 +114,15 @@ public class Crime {
 		}
 		
 		return sortedMap;
+	}
+	
+	public ArrayList<LatLng> getLatLngData() {
+		// Return a list of Heatmap point which is compatible with Google Heatmap API
+		ArrayList<LatLng> result = new ArrayList<LatLng> ();
+		for (CrimeItem e : this.crimeList) {
+			LatLng item = new LatLng(e.getLatitude(), e.getLongitude());
+			result.add(item);
+		}
+		return result;
 	}
 }

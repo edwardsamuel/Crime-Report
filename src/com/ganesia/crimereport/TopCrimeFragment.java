@@ -25,11 +25,11 @@ public class TopCrimeFragment extends Fragment{
 	@Override
 	   public View onCreateView(LayoutInflater inflater,	
 	      ViewGroup container, Bundle savedInstanceState) {
-		
+			// PANGGIL API 1
 		      topCrimeList.add(new TopCrime("Theft", "1237"));
 		      topCrimeList.add(new TopCrime("Battery", "726"));
 		      topCrimeList.add(new TopCrime("Narcotics", "1820"));
-	
+		      // SELESAI PEMBANGGILAN API
 		      View vGridView = inflater.inflate(R.layout.fragment_main, container, false);
 		      gridView = (GridView) vGridView.findViewById(R.id.gridview);
 		      customGridViewAdapter = new CustomGridViewAdapter(getActivity(), topCrimeList);

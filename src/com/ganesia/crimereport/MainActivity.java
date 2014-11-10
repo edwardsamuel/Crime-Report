@@ -28,6 +28,7 @@ import com.ganesia.crimereport.models.SafetyRating;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.support.v4.app.FragmentActivity;
@@ -62,61 +63,24 @@ public class MainActivity extends FragmentActivity {
     private static final int ALT_HEATMAP_RADIUS = 20;
        
 	private static final LatLng CHICAGO = new LatLng(41.8337329,-87.7321555);
-	
-	/**
-     * Maps name of data set to data (list of LatLngs)
-     * Also maps to the URL of the data set for attribution
-     */
-    private HashMap<String, DataSet> mLists = new HashMap<String, DataSet>();
     
-    /**
-     * Helper class - stores data sets and sources.
-     */
-    private class DataSet {
-        private ArrayList<LatLng> mDataset;
-        private String mUrl;
-
-        public DataSet(ArrayList<LatLng> dataSet, String url) {
-            this.mDataset = dataSet;
-            this.mUrl = url;
-        }
-
-        public ArrayList<LatLng> getData() {
-            return mDataset;
-        }
-
-        public String getUrl() {
-            return mUrl;
-        }
-    }
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// Setup the adapter
+		// Use Adapter from Retrofit Library
+		restAdapter = new RestAdapter.Builder()
+				.setEndpoint("http://crimedb.watchovermeapp.com:8080/crimereport/rs/data")
+				.build();
+		
+		// Fetch data from API
+		consumeReportAPI("2014-10-21");
+		consumeSafetyRatingAPI(41.8337329, -87.7321555);
+		
+		// Set the User Interface
 		setContentView(R.layout.activity_main);
-		
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
-		// mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CHICAGO, 10));
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-25, 143), 4)); // dummy: Melbourne
-		
-		try {
-            mLists.put(getString(R.string.crime_locations), new DataSet(readItems(R.raw.crime_locations),
-                    getString(R.string.crime_locations_url))); // please change the datasets of latlng in /res/raw/crime_locations.json
-        } catch (JSONException e) {
-            Toast.makeText(this, "Problem reading list of markers.", Toast.LENGTH_LONG).show();
-        }
-		
-		// Check if need to instantiate (avoid setData etc twice)
-        if (mProvider == null) {
-            mProvider = new HeatmapTileProvider.Builder().data(
-                    mLists.get(getString(R.string.crime_locations)).getData()).build();
-            mOverlay = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap().addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
-            mProvider.setRadius(ALT_HEATMAP_RADIUS);
-        } else {
-            mProvider.setData(mLists.get(getString(R.string.crime_locations)).getData());
-            mProvider.setRadius(ALT_HEATMAP_RADIUS);
-            mOverlay.clearTileCache();
-        }
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CHICAGO, 10));
 
 		TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
 		
@@ -168,14 +132,7 @@ public class MainActivity extends FragmentActivity {
             }
         });
 		
-		// Setup the adapter
-		// Use Adapter from Retrofit Library
-		restAdapter = new RestAdapter.Builder()
-				.setEndpoint("http://crimedb.watchovermeapp.com:8080/crimereport/rs/data")
-				.build();
 		
-		consumeReportAPI("2014-10-27");
-		consumeSafetyRatingAPI(41.883522, -87.627788);
 	}
 	
 	// Datasets from http://data.gov.au
@@ -200,27 +157,37 @@ public class MainActivity extends FragmentActivity {
 	
 			@Override
 			public void failure(RetrofitError arg0) {
-				// TODO Auto-generated method stub
-				//TextView text = (TextView) findViewById(R.id.API1);
-				//text.setText(arg0.toString());
+				Context context = getApplicationContext();
+				Toast t = Toast.makeText(context, arg0.toString(), 10);
 				CrimeData = null;
 			}
 	
 			@Override
 			public void success(Crime arg0, Response arg1) {
-				// TODO Auto-generated method stub
-				//TextView text = (TextView) findViewById(R.id.API1);
-				//text.setText("sukses");
 				CrimeData = new Crime(arg0);
-				
+				setHeatmap(CrimeData);
 				// pick the biggest three
 				Gson gson = new Gson();
-				String json = gson.toJson(CrimeData.topThreeCrime(), LinkedHashMap.class);
+//				String json = gson.toJson(CrimeData.topThreeCrime(), LinkedHashMap.class);
 				//text.setText(json);
 			}
 			
 		});
 	}
+    
+    private void setHeatmap(Crime c) {
+    	// Generate heatmap on Google Maps
+		// Check if need to instantiate (avoid setData etc twice)
+		if (mProvider == null) {
+			mProvider = new HeatmapTileProvider.Builder().data(c.getLatLngData()).build();
+		    mOverlay = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap().addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+            mProvider.setRadius(ALT_HEATMAP_RADIUS);
+        } else {
+            mProvider.setData(c.getLatLngData());
+            mProvider.setRadius(ALT_HEATMAP_RADIUS);
+            mOverlay.clearTileCache();
+        }
+    }
 	
     protected void consumeSafetyRatingAPI(Double lat, Double lng) {
 		// Consume SafetyRatingAPI
