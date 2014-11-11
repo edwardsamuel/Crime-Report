@@ -25,13 +25,20 @@ import com.ganesia.crimereport.adapters.SafetyRatingInterface;
 import com.ganesia.crimereport.models.Crime;
 import com.ganesia.crimereport.models.CrimeItem;
 import com.ganesia.crimereport.models.SafetyRating;
+import com.ganesia.crimereport.providers.PlaceProvider;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,6 +46,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
@@ -51,7 +59,7 @@ import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements LoaderCallbacks<Cursor> {
 	
 	private SlidingUpPanelLayout mLayout;
 	private GoogleMap mMap;
@@ -132,7 +140,36 @@ public class MainActivity extends FragmentActivity {
             }
         });
 		
-		
+		handleIntent(getIntent());
+	}	
+	
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+		handleIntent(intent);
+	}
+	
+	private void handleIntent(Intent intent) {
+		Toast.makeText(this, "LOG", Toast.LENGTH_LONG).show();
+		if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
+			doSearch(intent.getStringExtra(SearchManager.QUERY));
+		} else if (intent.getAction().equals(Intent.ACTION_VIEW)) {
+			getPlace(intent.getStringExtra(SearchManager.EXTRA_DATA_KEY));
+		}
+	}
+	
+	private void doSearch(String query) {
+		Bundle data = new Bundle();
+		data.putString("query", query);
+		getSupportLoaderManager().restartLoader(0, data, this);
+	}
+
+	private void getPlace(String query) {
+		Bundle data = new Bundle();
+		data.putString("query", query);
+		getSupportLoaderManager().restartLoader(1, data, this);
 	}
 	
 	// Datasets from http://data.gov.au
@@ -236,8 +273,52 @@ public class MainActivity extends FragmentActivity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_search) {
-			return true;
+			onSearchRequested();
 		}
 		return super.onOptionsItemSelected(item);
-	}	
+	}
+	
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int arg0, Bundle bundle) {
+		CursorLoader cLoader = null;
+		if (arg0 == 0) {
+			cLoader = new CursorLoader(getBaseContext(),
+					PlaceProvider.SEARCH_URI, null, null,
+					new String[] { bundle.getString("query") }, null);
+		} else if (arg0 == 1) {
+			cLoader = new CursorLoader(getBaseContext(),
+					PlaceProvider.DETAILS_URI, null, null,
+					new String[] { bundle.getString("query") }, null);
+		}
+		return cLoader;
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
+		// showLocations(c);
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> arg0) {
+		// TODO Auto-generated method stub
+	}
+
+	private void showLocations(Cursor c) {
+		MarkerOptions markerOptions = null;
+		LatLng position = null;
+		// mGoogleMap.clear();
+		while (c.moveToNext()) {
+			markerOptions = new MarkerOptions();
+			position = new LatLng(Double.parseDouble(c.getString(1)), Double.parseDouble(c.getString(2)));
+			markerOptions.position(position);
+			markerOptions.title(c.getString(0));
+			// mGoogleMap.addMarker(markerOptions);
+		}
+		if (position != null) {
+			CameraUpdate cameraPosition = CameraUpdateFactory
+					.newLatLng(position);
+			// mGoogleMap.animateCamera(cameraPosition);
+		}
+	}
 }
