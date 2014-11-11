@@ -124,7 +124,7 @@ public class MainActivity extends FragmentActivity {
         }
 
 		TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
-		
+
 		// add markers
 		mMap.addMarker(new MarkerOptions()
 			    .position(new LatLng(-25, 143))

@@ -18,4 +18,9 @@
         android:background="#C90C0C"
         android:textColor="#FFFFFF" />
 
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    
 </LinearLayout>
