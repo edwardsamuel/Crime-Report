@@ -1,8 +1,8 @@
 package com.ganesia.crimereport.providers;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.SearchManager;
 import android.content.ContentProvider;
@@ -16,7 +16,14 @@ import android.net.Uri;
 
 import com.ganesia.crimereport.Constants;
 import com.ganesia.crimereport.R;
+import com.google.gson.Gson;
 
+/***
+ * Content provider for reverse geocoding.
+ * 
+ * @author Edward Samuel
+ * 
+ */
 public class PlaceProvider extends ContentProvider {
 
 	public static final String AUTHORITY = "com.ganesia.crimereport.providers.PlaceProvider";
@@ -55,24 +62,16 @@ public class PlaceProvider extends ContentProvider {
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		Cursor c = null;
-
-		MatrixCursor mCursor = null;
+		MatrixCursor cursor = null;
 
 		switch (mUriMatcher.match(uri)) {
 		case SEARCH:
-
-			break;
-		case SUGGESTIONS:
-
-			// Defining a cursor object with columns id, SUGGEST_COLUMN_TEXT_1,
-			// SUGGEST_COLUMN_INTENT_EXTRA_DATA
-			mCursor = new MatrixCursor(new String[] { "_id",
-					SearchManager.SUGGEST_COLUMN_TEXT_1,
-					SearchManager.SUGGEST_COLUMN_TEXT_2,
-					SearchManager.SUGGEST_COLUMN_ICON_1,
-					SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA });
-
+			// Defining a cursor object
+			cursor = new MatrixCursor(new String[] {
+					"name", "address", "latitude", "longitude"
+			}, MAX_RESULTS);
+			
+			// Fill the cursor with suggestion
 			try {
 				String query = selectionArgs[0];
 				List<Address> suggestions = getLocation(query);
@@ -81,25 +80,68 @@ public class PlaceProvider extends ContentProvider {
 				for (int i = 0, len = suggestions.size(); i < len; i++) {
 					// Adding place details to cursor
 					Address address = suggestions.get(i);
-					mCursor.addRow(new String[] {
-							Integer.toString(i),
+					cursor.addRow(new Object[] {
 							address.getFeatureName(),
 							getAddressString(address),
-							Integer.toString(R.drawable.ic_action_place),
-							address.getLatitude() + ","+ address.getLongitude() });
+							address.getLatitude(),
+							address.getLongitude()
+							});
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
-			c = mCursor;
+			break;
+		case SUGGESTIONS:
+			// Defining a cursor object with columns id, SUGGEST_COLUMN_TEXT_1,
+			// SearchManager.SUGGEST_COLUMN_TEXT_2, SearchManager.SUGGEST_COLUMN_ICON_1,
+			// SUGGEST_COLUMN_INTENT_EXTRA_DATA
+			cursor = new MatrixCursor(new String[] { "_id",
+					SearchManager.SUGGEST_COLUMN_TEXT_1,
+					SearchManager.SUGGEST_COLUMN_TEXT_2,
+					SearchManager.SUGGEST_COLUMN_ICON_1,
+					SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA }, MAX_RESULTS);
+
+			try {
+				String query = selectionArgs[0];
+				List<Address> suggestions = getLocation(query);
+				
+				Gson gson = new Gson();
+
+				// Creating cursor object with places
+				for (int i = 0, len = suggestions.size(); i < len; i++) {
+					// Adding place details to cursor
+					Address address = suggestions.get(i);
+					cursor.addRow(new Object[] {
+							i,
+							address.getFeatureName(),
+							getAddressString(address),
+							Integer.toString(R.drawable.ic_action_place),
+							gson.toJson(address) });
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			break;
 		case DETAILS:
-
+			// Defining a cursor object
+			cursor = new MatrixCursor(new String[] {
+					"name", "address", "latitude", "longitude"
+			}, 1);
+			
+			// Fill the cursor with intent entra data
+			Address address = new Gson().fromJson(selectionArgs[0], Address.class);
+			cursor.addRow(new Object[] {
+					address.getFeatureName(),
+					getAddressString(address),
+					address.getLatitude(),
+					address.getLongitude()
+					});
+					
 			break;
 		}
 
-		return c;
+		return cursor;
 	}
 
 	@Override
