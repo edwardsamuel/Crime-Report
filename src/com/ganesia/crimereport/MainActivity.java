@@ -25,10 +25,12 @@ import com.ganesia.crimereport.adapters.SafetyRatingInterface;
 import com.ganesia.crimereport.models.Crime;
 import com.ganesia.crimereport.models.CrimeItem;
 import com.ganesia.crimereport.models.SafetyRating;
+import com.ganesia.crimereport.models.TopCrime;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.support.v4.app.FragmentActivity;
@@ -67,6 +69,12 @@ public class MainActivity extends FragmentActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		// Set the User Interface
+		setContentView(R.layout.activity_main);
+		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
+		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CHICAGO, 10));
+		
 		// Setup the adapter
 		// Use Adapter from Retrofit Library
 		restAdapter = new RestAdapter.Builder()
@@ -76,13 +84,6 @@ public class MainActivity extends FragmentActivity {
 		// Fetch data from API
 		consumeReportAPI("2014-10-21");
 		consumeSafetyRatingAPI(41.8337329, -87.7321555);
-		
-		// Set the User Interface
-		setContentView(R.layout.activity_main);
-		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(CHICAGO, 10));
-
-		TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
 		
 		// add markers
 		mMap.addMarker(new MarkerOptions()
@@ -167,7 +168,14 @@ public class MainActivity extends FragmentActivity {
 				CrimeData = new Crime(arg0);
 				setHeatmap(CrimeData);
 				// pick the biggest three
-				Gson gson = new Gson();
+				ArrayList<TopCrime> topCrimes = new ArrayList<TopCrime>();
+				topCrimes = arg0.getTopThreeCrime();
+			
+				TopCrimeFragment topCrimeFrag = (TopCrimeFragment) getFragmentManager().findFragmentById(R.id.fragment_main);
+				topCrimeFrag.updateTopCrime(topCrimes);
+				
+				Log.d("top three", topCrimes.get(0).getCrimeTitle());
+//				Gson gson = new Gson();
 //				String json = gson.toJson(CrimeData.topThreeCrime(), LinkedHashMap.class);
 				//text.setText(json);
 			}

@@ -1,12 +1,14 @@
 package com.ganesia.crimereport.models;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.android.gms.maps.model.LatLng;
 public class Crime {
@@ -47,8 +49,29 @@ public class Crime {
 	this.additionalProperties.put(name, value);
 	}
 	
+	public ArrayList<LatLng> getLatLngData() {
+		// Return a list of Heatmap point which is compatible with Google Heatmap API
+		ArrayList<LatLng> result = new ArrayList<LatLng> ();
+		for (CrimeItem e : this.crimeList) {
+			LatLng item = new LatLng(e.getLatitude(), e.getLongitude());
+			result.add(item);
+		}
+		return result;
+	}
+
+	public ArrayList<TopCrime> getTopThreeCrime() {
+		ArrayList<TopCrime> result = new ArrayList<TopCrime>();
+		LinkedHashMap<String, Integer> listOfTopCrime = caluclateTopThreeCrime();
+		Collection<String> keySet = listOfTopCrime.keySet();
+		for (String k : keySet) {
+			TopCrime t = new TopCrime(k, listOfTopCrime.get(k).toString());
+			result.add(t);
+		}
+		return result;
+	}
+	
 	// calculation
-	public LinkedHashMap<String,Integer> topThreeCrime() {
+	private LinkedHashMap<String,Integer> caluclateTopThreeCrime() {
 		// create HashMap
 		Map<String, List<CrimeItem>> hm = new HashMap<String, List<CrimeItem>>();
 		// arrange crime data based on its crime type
@@ -67,7 +90,6 @@ public class Crime {
 		}
 		// sort and return the top three crime
 		return sortHashMapByValues(hm);
-	
 	}
 	
 	private LinkedHashMap<String, Integer> sortHashMapByValues(Map<String,List<CrimeItem>> passedMap) {
@@ -116,13 +138,5 @@ public class Crime {
 		return sortedMap;
 	}
 	
-	public ArrayList<LatLng> getLatLngData() {
-		// Return a list of Heatmap point which is compatible with Google Heatmap API
-		ArrayList<LatLng> result = new ArrayList<LatLng> ();
-		for (CrimeItem e : this.crimeList) {
-			LatLng item = new LatLng(e.getLatitude(), e.getLongitude());
-			result.add(item);
-		}
-		return result;
-	}
+	
 }

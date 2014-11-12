@@ -1,6 +1,7 @@
 package com.ganesia.crimereport;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import com.ganesia.crimereport.adapters.CustomGridViewAdapter;
 import com.ganesia.crimereport.models.Crime;
@@ -15,26 +16,37 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
-public class TopCrimeFragment extends Fragment{
+public class TopCrimeFragment extends Fragment {
+	Crime mCrimeData;
+	GridView mGridView;
+	ArrayList<TopCrime> mTopCrimeList;
+	CustomGridViewAdapter mCustomGridViewAdapter;
 
-	Crime CrimeData;
-	GridView gridView;
-	ArrayList<TopCrime> topCrimeList = new ArrayList<TopCrime>();
-	CustomGridViewAdapter customGridViewAdapter;
-	
+	public TopCrimeFragment() {
+		mTopCrimeList = new ArrayList<TopCrime>();
+		// // initialize the mTopCrimeList
+		mTopCrimeList.add(new TopCrime("---", "0"));
+		mTopCrimeList.add(new TopCrime("---", "0"));
+		mTopCrimeList.add(new TopCrime("---", "0"));
+	}
+
 	@Override
-	   public View onCreateView(LayoutInflater inflater,	
-	      ViewGroup container, Bundle savedInstanceState) {
-			// PANGGIL API 1
-		      topCrimeList.add(new TopCrime("Theft", "1237"));
-		      topCrimeList.add(new TopCrime("Battery", "726"));
-		      topCrimeList.add(new TopCrime("Narcotics", "1820"));
-		      // SELESAI PEMBANGGILAN API
-		      View vGridView = inflater.inflate(R.layout.fragment_main, container, false);
-		      gridView = (GridView) vGridView.findViewById(R.id.gridview);
-		      customGridViewAdapter = new CustomGridViewAdapter(getActivity(), topCrimeList);
-		      gridView.setAdapter(customGridViewAdapter);
-		      
-		      return vGridView;
-		   }
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+
+		View vGridView = inflater.inflate(R.layout.fragment_main, container,
+				false);
+		mGridView = (GridView) vGridView.findViewById(R.id.gridview);
+		mCustomGridViewAdapter = new CustomGridViewAdapter(getActivity(),
+				mTopCrimeList);
+		mGridView.setAdapter(mCustomGridViewAdapter);
+
+		return vGridView;
+	}
+	
+	public void updateTopCrime(ArrayList<TopCrime> crimeList) {
+		mCustomGridViewAdapter.clear();
+		mCustomGridViewAdapter.addAll(crimeList);
+		mCustomGridViewAdapter.notifyDataSetChanged();
+	}
 }
