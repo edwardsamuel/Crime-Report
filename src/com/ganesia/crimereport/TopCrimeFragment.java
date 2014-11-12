@@ -6,11 +6,9 @@ import java.util.LinkedHashMap;
 import com.ganesia.crimereport.adapters.CustomGridViewAdapter;
 import com.ganesia.crimereport.models.Crime;
 import com.ganesia.crimereport.models.TopCrime;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

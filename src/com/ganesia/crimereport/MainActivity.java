@@ -14,20 +14,10 @@ import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-
-import com.ganesia.crimereport.R;
-import com.ganesia.crimereport.adapters.CrimeInterface;
-import com.ganesia.crimereport.adapters.SafetyRatingInterface;
-import com.ganesia.crimereport.models.Crime;
-import com.ganesia.crimereport.models.CrimeItem;
-import com.ganesia.crimereport.models.SafetyRating;
-import com.ganesia.crimereport.models.TopCrime;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -39,6 +29,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
@@ -49,6 +41,7 @@ import com.ganesia.crimereport.adapters.SafetyRatingInterface;
 import com.ganesia.crimereport.models.Crime;
 import com.ganesia.crimereport.models.CrimeItem;
 import com.ganesia.crimereport.models.SafetyRating;
+import com.ganesia.crimereport.models.TopCrime;
 import com.ganesia.crimereport.providers.PlaceProvider;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -60,7 +53,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
-import com.google.gson.Gson;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
@@ -73,7 +65,8 @@ public class MainActivity extends FragmentActivity implements
 	private TileOverlay mOverlay;
 	private RestAdapter restAdapter;
 	private Crime CrimeData;
-
+    private boolean flip = false;
+    
 	private static final int ALT_HEATMAP_RADIUS = 20;
 
 	private static final LatLng CHICAGO = new LatLng(41.8337329, -87.7321555);
@@ -94,6 +87,8 @@ public class MainActivity extends FragmentActivity implements
 		restAdapter = new RestAdapter.Builder().setEndpoint(
 				"http://crimedb.watchovermeapp.com:8080/crimereport/rs/data")
 				.build();
+
+		TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
 
 		// Fetch data from API
 		consumeReportAPI("2014-10-21");
@@ -151,6 +146,36 @@ public class MainActivity extends FragmentActivity implements
 		});
 
 		handleIntent(getIntent());
+		
+		
+		Button b = (Button) findViewById(R.id.button1);
+		b.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (!flip) {
+					TopCrimeFragment topCrimeFrag = new TopCrimeFragment();
+					FragmentManager fm = getFragmentManager();
+					FragmentTransaction transaction = fm.beginTransaction();
+					transaction.replace(R.id.fragment_main, topCrimeFrag);
+					transaction.addToBackStack(null);
+					transaction.commit();
+					Toast toast = Toast.makeText(getApplicationContext(), "true", Toast.LENGTH_LONG);
+					toast.show();
+					flip = true;
+				} else {
+					SafetyRatingFragment safetyRatingFrag = new SafetyRatingFragment();
+					FragmentManager fm = getFragmentManager();
+					FragmentTransaction transaction = fm.beginTransaction();
+					transaction.replace(R.id.fragment_main, safetyRatingFrag);
+					transaction.addToBackStack(null);
+					transaction.commit();
+					flip = false;
+					
+				}
+			}
+		});
+		
 	}
 
 	@Override

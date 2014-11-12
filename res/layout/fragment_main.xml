@@ -9,18 +9,20 @@
     android:id="@+id/dragView">
     
     <TextView
-		android:layout_width="match_parent"
-		android:layout_height="48dp"
-		android:gravity="center"
-		android:text="@string/top_crime"
-		android:textSize="18sp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:background="#404040"
+        android:text="@string/top_crime"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
         android:textStyle="bold" />
     
     <GridView
         android:id="@+id/gridview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF"
+        android:background="#404040"
         android:columnWidth="90dp"
         android:gravity="center"
         android:horizontalSpacing="10dp"
