@@ -295,8 +295,8 @@ public class MainActivity extends FragmentActivity implements LoaderCallbacks<Cu
 	}
 
 	@Override
-	public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
-		// showLocations(c);
+	public void onLoadFinished(Loader<Cursor> arg0, Cursor c) {
+		showLocations(c);
 	}
 
 	@Override
@@ -307,18 +307,23 @@ public class MainActivity extends FragmentActivity implements LoaderCallbacks<Cu
 	private void showLocations(Cursor c) {
 		MarkerOptions markerOptions = null;
 		LatLng position = null;
-		// mGoogleMap.clear();
-		while (c.moveToNext()) {
+		
+		mMap.clear();
+		while (c.moveToNext()) {			
+			double latitude = c.getDouble(2);   // Latitude (in 2nd column)
+			double longitude = c.getDouble(3);  // Longitude (in 3rd column)
+			position = new LatLng(latitude, longitude);
+
 			markerOptions = new MarkerOptions();
-			position = new LatLng(Double.parseDouble(c.getString(1)), Double.parseDouble(c.getString(2)));
 			markerOptions.position(position);
 			markerOptions.title(c.getString(0));
-			// mGoogleMap.addMarker(markerOptions);
+			mMap.addMarker(markerOptions);
 		}
+		
 		if (position != null) {
 			CameraUpdate cameraPosition = CameraUpdateFactory
 					.newLatLng(position);
-			// mGoogleMap.animateCamera(cameraPosition);
+			mMap.animateCamera(cameraPosition);
 		}
 	}
 }
