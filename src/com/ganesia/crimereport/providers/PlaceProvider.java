@@ -2,7 +2,6 @@ package com.ganesia.crimereport.providers;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 
 import android.app.SearchManager;
 import android.content.ContentProvider;

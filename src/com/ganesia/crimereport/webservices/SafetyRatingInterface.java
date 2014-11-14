@@ -1,10 +1,10 @@
-package com.ganesia.crimereport.adapters;
-
-import com.ganesia.crimereport.models.SafetyRating;
+package com.ganesia.crimereport.webservices;
 
 import retrofit.Callback;
 import retrofit.http.GET;
 import retrofit.http.Query;
+
+import com.ganesia.crimereport.models.SafetyRating;
 
 public interface SafetyRatingInterface {
 	@GET("/safetyrating")

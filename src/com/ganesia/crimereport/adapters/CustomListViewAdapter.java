@@ -26,7 +26,7 @@ public class CustomListViewAdapter extends ArrayAdapter<SafetyRatingItem>{
 	}
 	
 	public CustomListViewAdapter(Activity context, ArrayList<SafetyRatingItem> data){
-		super(context, R.layout.activity_safety_row, data);
+		super(context, R.layout.item_safety_row, data);
 		this.context = context;
 		this.data = data;
 	}
@@ -38,7 +38,7 @@ public class CustomListViewAdapter extends ArrayAdapter<SafetyRatingItem>{
 		
 		if(row == null){
 			LayoutInflater inflater = context.getLayoutInflater();
-			row = inflater.inflate(R.layout.activity_safety_row, null);
+			row = inflater.inflate(R.layout.item_safety_row, null);
 			
 			// configure RecordHolder
 			ViewHolder viewHolder = new ViewHolder();

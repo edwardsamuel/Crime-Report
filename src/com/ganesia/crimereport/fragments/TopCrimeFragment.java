@@ -1,10 +1,13 @@
-package com.ganesia.crimereport;
+package com.ganesia.crimereport.fragments;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import com.ganesia.crimereport.R;
+import com.ganesia.crimereport.R.id;
+import com.ganesia.crimereport.R.layout;
 import com.ganesia.crimereport.adapters.CustomGridViewAdapter;
-import com.ganesia.crimereport.models.Crime;
+import com.ganesia.crimereport.models.CrimeQueryResult;
 import com.ganesia.crimereport.models.TopCrime;
 
 import android.app.Fragment;
@@ -15,10 +18,9 @@ import android.view.ViewGroup;
 import android.widget.GridView;
 
 public class TopCrimeFragment extends Fragment {
-	Crime mCrimeData;
-	GridView mGridView;
-	ArrayList<TopCrime> mTopCrimeList;
-	CustomGridViewAdapter mCustomGridViewAdapter;
+	private GridView mGridView;
+	private ArrayList<TopCrime> mTopCrimeList;
+	private CustomGridViewAdapter mCustomGridViewAdapter;
 
 	public TopCrimeFragment() {
 		mTopCrimeList = new ArrayList<TopCrime>();

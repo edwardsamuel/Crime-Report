@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ganesia.crimereport.MainActivity"
+    tools:context="com.ganesia.crimereport.activities.MainActivity"
     android:orientation="vertical" >
 
     <com.sothree.slidinguppanel.SlidingUpPanelLayout
@@ -20,12 +20,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-            <Button 
-                android:id="@+id/button1"
-                android:layout_height="wrap_content" 
-                android:layout_width="wrap_content"
-                android:gravity="top"
-                android:text="Button"/>
 	        <fragment 
 				android:id="@+id/fragment_map"
 				android:layout_width="match_parent"
@@ -33,11 +27,11 @@
 				android:name="com.google.android.gms.maps.MapFragment"/>            
         </LinearLayout>
     
-	    <FrameLayout 
+	    <fragment 
 			android:id="@+id/fragment_main"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			android:name="com.ganesia.crimereport.TopCrimeFragment"/>
+			android:name="com.ganesia.crimereport.fragments.TopCrimeFragment"/>
 
 	</com.sothree.slidinguppanel.SlidingUpPanelLayout>
 	

@@ -23,7 +23,7 @@ public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
 	}
 	
 	public CustomGridViewAdapter(Activity context, ArrayList<TopCrime> data){
-		super(context, R.layout.activity_top3row, data);
+		super(context, R.layout.item_top_three, data);
 		this.context = context;
 		this.data = data;
 	}	
@@ -35,7 +35,7 @@ public class CustomGridViewAdapter extends ArrayAdapter<TopCrime> {
 		
 		if(row == null){
 			LayoutInflater inflater = context.getLayoutInflater();
-			row = inflater.inflate(R.layout.activity_top3row, null);
+			row = inflater.inflate(R.layout.item_top_three, null);
 			
 			// configure RecordHolder
 			ViewHolder viewHolder = new ViewHolder();

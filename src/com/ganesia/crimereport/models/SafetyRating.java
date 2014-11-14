@@ -2,11 +2,8 @@ package com.ganesia.crimereport.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.internal.LinkedTreeMap;
 
 import android.util.Log;
 public class SafetyRating {

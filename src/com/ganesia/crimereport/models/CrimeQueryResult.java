@@ -8,15 +8,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.google.android.gms.maps.model.LatLng;
-public class Crime {
+public class CrimeQueryResult {
 	
 	private List<CrimeItem> crimeList = new ArrayList<CrimeItem>();
 	private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 	
-	public Crime(Crime _Crime) {
+	public CrimeQueryResult(CrimeQueryResult _Crime) {
 		// deep copy
 		for (CrimeItem c : _Crime.getCrimeList()) {
 			this.crimeList.add(c);
@@ -88,6 +87,7 @@ public class Crime {
 				hm.get(c.getCrimeType()).add(c);
 			}
 		}
+		
 		// sort and return the top three crime
 		return sortHashMapByValues(hm);
 	}
