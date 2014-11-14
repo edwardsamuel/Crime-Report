@@ -1,11 +1,13 @@
 package com.ganesia.crimereport.models;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import android.util.Log;
 public class SafetyRating {
 	
 	private String safetyRating;
@@ -19,7 +21,7 @@ public class SafetyRating {
 	private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 	
 	public SafetyRating() {
-		Log.d("coba2","--hidup--");
+		
 	}
 	
 	/**
@@ -145,8 +147,8 @@ public class SafetyRating {
 	* The crimeList
 	*/
 	public void setCrimeList(List<Object> crimeList) {
-		Log.d("coba", "createCrimeList");
-		this.crimeList = crimeList;
+		List<Object> tempCrimeList = crimeList;
+		this.crimeList = tempCrimeList;
 	}
 	
 	/**
@@ -202,8 +204,6 @@ public class SafetyRating {
 				ArrayList<Object> tempCrime = (ArrayList<Object>) c;
 				for (int i = 0; i < tempCrime.size(); i++) {
 					Map m = (Map) tempCrime.get(i);
-					
-//					Log.d("coba",m.keySet().toString());
 					CrimeItem singleCrime = mapToCrimeItem(m);
 					value.add(singleCrime);
 				}
@@ -238,7 +238,7 @@ public class SafetyRating {
 					result.setTimeZone((String) m.get(key));
 					break;
 				case "crimeDate":
-					result.setCrimeDate((Double) m.get(key));
+					result.setCrimeDate(Math.round((Double) m.get(key)));
 					break;
 				case "crimeType":
 					result.setCrimeType((String) m.get(key));
@@ -251,5 +251,66 @@ public class SafetyRating {
 		//crimeCaseID, note, crimeAddress, crimeReportDate, latitude, timeZone, crimeDate, crimeType, longitude]
 		return result;
 	}
-
+	
+	public HashMap <String, ArrayList<CrimeItem>> getTrendingCrimeAroundUserTimedate(long nTimeInMilis ) {
+		// return the trending crime around user's timedate in nTimeInMilis (milisecond)
+		// by filtering returned CrimeList from SafetyRating API
+		
+		// Deep Copy the HashMap which is returned from method getNearestCrimeList()
+		HashMap <String, ArrayList<CrimeItem>> trendingCrime = new HashMap<String, ArrayList<CrimeItem>>(this.getNearestCrimeList());
+		Set<String> keysColl = trendingCrime.keySet();
+		// List of removed elements, will be removed at the end of loop of every key
+		ArrayList<CrimeItem> removedCrimeItems = new ArrayList<CrimeItem>();
+		
+		for (Iterator keyIterator = keysColl.iterator(); keyIterator.hasNext();) {
+			String k = (String) keyIterator.next();
+			ArrayList<CrimeItem> crimeList = trendingCrime.get(k);
+			for (Iterator valueIterator = crimeList.iterator(); valueIterator.hasNext();) {
+				CrimeItem tempCrimeItem = (CrimeItem) valueIterator.next();
+					// CrimeItem is in the valid time range
+					// keep it on CrimeList 
+				if (!isTimeDifferenceNHours(nTimeInMilis, tempCrimeItem.getCrimeDate())){
+					// CrimeItem is not in the valid time range
+					// remove the data which is not in the time range
+					removedCrimeItems.add(tempCrimeItem);
+				}
+			}
+			crimeList.removeAll(removedCrimeItems);
+		}
+		return trendingCrime;
+	}
+	
+	private Boolean isTimeDifferenceNHours (long timeRangeInMilis, long targetTimeInMilis) {
+		// hours difference in milisecond measurement
+		// currentTime : user's timedate in MM:SS
+		// targetTime : CrimeItem's crimeDate in MM:SS
+		int f = 0;
+		int t = 0;
+		long result = 0;
+		Calendar now = Calendar.getInstance();
+		Calendar targetCal = Calendar.getInstance();
+		targetCal.setTimeInMillis(targetTimeInMilis);
+		targetCal.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH));
+		targetCal.set(Calendar.MONTH, now.get(Calendar.MONTH));
+		targetCal.set(Calendar.YEAR, now.get(Calendar.YEAR));
+		
+		long timeDelta = (now.getTimeInMillis() - targetCal.getTimeInMillis());
+		// time difference is always in INTEGER range, so it's safe to cast long to int directly
+		int deltaSecond = Math.abs((int) timeDelta /1000);
+		// maxSecondRange is the maximum time difference between currentTime and targetTime
+		// e.g. we want to look at crime that happen around 2 hours of user's timedate
+		// if user's timedate is 00:00, we need to look at crime that happen at 22:00 - 00:00 and 00:00 - 02:00
+		int maxSecondRange = 24*3600 - ((int) timeRangeInMilis / 1000);
+		if (deltaSecond > maxSecondRange) {
+			deltaSecond = deltaSecond - maxSecondRange;
+		}
+		if (deltaSecond > timeRangeInMilis/1000) {
+			// remove the data which is not in the time range
+			// the removal is located in getTrendingCrimeAroundUserTime
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
 }

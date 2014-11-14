@@ -4,35 +4,36 @@ import java.util.HashMap;
 import java.util.Map;
 public class CrimeItem {
 
-private String crimeCaseID;
-private String note;
-private String crimeAddress;
-private Double crimeReportDate;
-private Double latitude;
-private String timeZone;
-private Double crimeDate;
-private String crimeType;
-private Double longitude;
-private Map<String, Object> additionalProperties = new HashMap<String, Object>();
-
-/**
-* 
-* @return
-* The crimeCaseID
-*/
-public String getCrimeCaseID() {
-return crimeCaseID;
-}
-
-/**
-* 
-* @param crimeCaseID
-* The crimeCaseID
-*/
-public void setCrimeCaseID(String crimeCaseID) {
-		this.crimeCaseID = crimeCaseID;
+	private String crimeCaseID;
+	private String note;
+	private String crimeAddress;
+	private Double crimeReportDate;
+	private Double latitude;
+	private String timeZone;
+	private Long crimeDate;
+	private String crimeType;
+	private Double longitude;
+	private String type;
+	private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+	private Boolean arrest;
+	/**
+	* 
+	* @return
+	* The crimeCaseID
+	*/
+	public String getCrimeCaseID() {
+		return crimeCaseID;
 	}
 	
+	/**
+	* 
+	* @param crimeCaseID
+	* The crimeCaseID
+	*/
+	public void setCrimeCaseID(String crimeCaseID) {
+		this.crimeCaseID = crimeCaseID;
+	}
+		
 	/**
 	* 
 	* @return
@@ -48,6 +49,14 @@ public void setCrimeCaseID(String crimeCaseID) {
 	* The note
 	*/
 	public void setNote(String note) {
+		// set and parse Note
+		// e.g. note: "FOUND SUSPECT NARCOTICS, arrest:true"
+		// into
+		// note = FOUND SUSPECT NARCOTICS
+		// arrest = true
+		String[] words = note.split(", ");
+		String arrest = words[1].split("arrest:")[1];
+		this.setArrest(Boolean.parseBoolean(arrest));
 		this.note = note;
 	}
 	
@@ -66,7 +75,15 @@ public void setCrimeCaseID(String crimeCaseID) {
 	* The crimeAddress
 	*/
 	public void setCrimeAddress(String crimeAddress) {
-		this.crimeAddress = crimeAddress;
+		// set and parse CrimeAddress
+		// e.g. crimeAddress: "079XX S EAST END AVE, type:STREET, district:004, community_area:46"
+		// into 
+		// crimeAddress = "079XX S EAST END AVE"
+		// type = STREET
+		String[] words = crimeAddress.split(", ");
+		String type = words[1].split("type:")[1];
+		this.setType(type);
+		this.crimeAddress = words[0];
 	}
 	
 	/**
@@ -128,7 +145,7 @@ public void setCrimeCaseID(String crimeCaseID) {
 	* @return
 	* The crimeDate
 	*/
-	public Double getCrimeDate() {
+	public Long getCrimeDate() {
 		return crimeDate;
 	}
 	
@@ -137,7 +154,7 @@ public void setCrimeCaseID(String crimeCaseID) {
 	* @param crimeDate
 	* The crimeDate
 	*/
-	public void setCrimeDate(Double crimeDate) {
+	public void setCrimeDate(Long crimeDate) {
 		this.crimeDate = crimeDate;
 	}
 	
@@ -183,6 +200,35 @@ public void setCrimeCaseID(String crimeCaseID) {
 	
 	public void setAdditionalProperty(String name, Object value) {
 		this.additionalProperties.put(name, value);
+	}
+
+	/**
+	 * @return the type from crimeAddress
+	 * e.g. crimeAddress: "0000X S LA SALLE ST, type:STREET, district:001, community_area:32
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	/**
+	 * @return the arrest
+	 */
+	public boolean isArrest() {
+		return arrest;
+	}
+
+	/**
+	 * @param arrest the arrest to set
+	 */
+	public void setArrest(Boolean arrest) {
+		this.arrest = arrest;
 	}
 
 }
