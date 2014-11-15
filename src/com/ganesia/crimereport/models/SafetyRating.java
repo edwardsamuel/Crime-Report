@@ -313,4 +313,14 @@ public class SafetyRating {
 			return true;
 		}
 	}
+	
+	/***
+	 * Get crime item based on id.
+	 * @param crimeId
+	 * @return a {@link CrimeItem} if found, null if not found
+	 */
+	public CrimeItem getCrime(String crimeId) {
+		// TODO: Generate from data
+		return null;
+	}
 }
