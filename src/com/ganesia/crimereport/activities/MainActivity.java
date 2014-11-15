@@ -84,35 +84,6 @@ public class MainActivity extends FragmentActivity {
 
 		// Fetch data from API
 		consumeReportAPI("2014-10-21");
-
-		handleIntent(getIntent());
-	}
-
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		setIntent(intent);
-		handleIntent(intent);
-	}
-
-	private void handleIntent(Intent intent) {
-		if (intent.getAction().equals(Intent.ACTION_SEARCH)) {
-			doSearch(intent.getStringExtra(SearchManager.QUERY));
-		} else if (intent.getAction().equals(Intent.ACTION_VIEW)) {
-			getPlace(intent.getStringExtra(SearchManager.EXTRA_DATA_KEY));
-		}
-	}
-
-	private void doSearch(String query) {
-		Bundle data = new Bundle();
-		data.putString("query", query);
-		// getSupportLoaderManager().restartLoader(0, data, this);
-	}
-
-	private void getPlace(String query) {
-		Bundle data = new Bundle();
-		data.putString("query", query);
-		// getSupportLoaderManager().restartLoader(1, data, this);
 	}
 
 	private void consumeReportAPI(String date) {
@@ -135,7 +106,7 @@ public class MainActivity extends FragmentActivity {
 				topCrimes = queryResult.getTopThreeCrime();
 
 				if (mState == STATE_HOME) {
-					TopCrimeFragment topCrimeFrag = (TopCrimeFragment) getFragmentManager().findFragmentById(R.id.fragment_main);
+					TopCrimeFragment topCrimeFrag = (TopCrimeFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_main);
 					topCrimeFrag.updateTopCrime(topCrimes);
 				}
 			}
@@ -147,8 +118,8 @@ public class MainActivity extends FragmentActivity {
 		service.getSafetyRating(Constants.CITY, lat, lng, new Callback<SafetyRating>() {
 			
 			@Override
-			public void failure(RetrofitError arg0) {
-				Toast.makeText(getApplicationContext(), arg0.toString(), Toast.LENGTH_LONG).show();
+			public void failure(RetrofitError error) {
+				Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -224,44 +195,14 @@ public class MainActivity extends FragmentActivity {
 				CursorAdapter adapter = mSearchView.getSuggestionsAdapter();
 				Cursor c = (Cursor) adapter.getItem(position);
 				
-				MarkerOptions markerOptions = null;
-				LatLng geoloc = null;
-
-				mMap.clear();
 				if (c != null) {
-					String name = c.getString(1);
+					String name = c.getString(2);
 					double latitude = c.getDouble(4); // Latitude (in 4th column)
 					double longitude = c.getDouble(5); // Longitude (in 5th column)
-					geoloc = new LatLng(latitude, longitude);
-
-					markerOptions = new MarkerOptions();
-					markerOptions.position(geoloc);
-					markerOptions.title(name);
-					mMap.addMarker(markerOptions);
+					
+					safetyReport(name, latitude, longitude);
 				}
 
-				if (geoloc != null) {
-					CameraUpdate cameraPosition = CameraUpdateFactory
-							.newLatLng(geoloc);
-					mMap.animateCamera(cameraPosition);
-				}
-				
-				// Create fragment and give it an argument specifying the article it should show
-				Fragment newFragment = new SafetyRatingFragment();			
-				FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-				// Replace whatever is in the fragment_container view with this fragment,
-				// and add the transaction to the back stack so the user can navigate back
-				transaction.replace(R.id.fragment_main, newFragment);
-				transaction.addToBackStack(null);
-
-				// Commit the transaction
-				transaction.commit();
-
-				if (mSearchMenuItem != null) {
-					mSearchMenuItem.collapseActionView();
-				}
-				
 				return true;
 			}
 		});
@@ -279,5 +220,40 @@ public class MainActivity extends FragmentActivity {
 			onSearchRequested();
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	private void safetyReport(String name, double lat, double lng) {
+		LatLng location = new LatLng(lat, lng);
+		CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(location);
+
+		MarkerOptions markerOptions = new MarkerOptions();
+		markerOptions.position(location);
+		markerOptions.title(name);
+
+		mMap.clear();
+		mMap.addMarker(markerOptions);
+		mMap.animateCamera(cameraPosition);
+
+		if (mState == STATE_HOME) {
+			Toast.makeText(getApplicationContext(), name, Toast.LENGTH_LONG).show();
+			
+			// Create fragment and give it an argument specifying the article it should show
+			if (mSearchMenuItem != null) {
+				mSearchMenuItem.collapseActionView();
+			}
+			
+			Fragment newFragment = new SafetyRatingFragment();			
+			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+	
+			// Replace whatever is in the fragment_container view with this fragment,
+			// and add the transaction to the back stack so the user can navigate back
+			transaction.replace(R.id.fragment_main, newFragment);
+			transaction.addToBackStack(null);
+	
+			// Commit the transaction
+			transaction.commit();
+			
+			mState = STATE_SEARCH;			
+		}
 	}
 }
