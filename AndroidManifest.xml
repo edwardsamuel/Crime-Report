@@ -28,9 +28,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
 
             <!-- Points to searchable activity -->
             <meta-data
@@ -42,10 +39,6 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable_main" />
         </activity>
-        <provider
-            android:name="com.ganesia.crimereport.providers.PlaceProvider"
-            android:authorities="com.ganesia.crimereport.providers.PlaceProvider"
-            android:exported="false" />
         <meta-data
 		    android:name="com.google.android.maps.v2.API_KEY"
 		    android:value="AIzaSyAHBFBSirrjeNO_by_iyrWeOrCmX7Jylm8"/>
