@@ -2,20 +2,18 @@ package com.ganesia.crimereport.fragments;
 
 import java.util.ArrayList;
 
-import com.ganesia.crimereport.R;
-import com.ganesia.crimereport.R.id;
-import com.ganesia.crimereport.R.layout;
-import com.ganesia.crimereport.adapters.CustomListViewAdapter;
-import com.ganesia.crimereport.models.SafetyRatingItem;
-
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-public class SafetyRatingFragment extends Fragment{
+import com.ganesia.crimereport.R;
+import com.ganesia.crimereport.adapters.CustomListViewAdapter;
+import com.ganesia.crimereport.models.SafetyRatingItem;
+
+public class SafetyRatingFragment extends Fragment {
 	
 	ListView listView;
 	ArrayList<SafetyRatingItem> safetyRatingList = new ArrayList<SafetyRatingItem>();

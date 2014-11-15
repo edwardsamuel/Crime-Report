@@ -16,5 +16,6 @@ public abstract class Constants {
 	public static double NW_LONGITUDE = -87.94010100000000;
 	public static double SE_LATITUDE = 41.64428600000000;
 	public static double SE_LONGITUDE = -87.52366100000000;
+	public static final String CRIME_API_ENDPOINT = "http://crimedb.watchovermeapp.com:8080/crimereport/rs/data";
 	
 }

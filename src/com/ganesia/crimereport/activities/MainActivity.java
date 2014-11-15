@@ -9,32 +9,30 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.CursorAdapter;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.SearchView.OnSuggestionListener;
 import android.widget.Toast;
 
 import com.ganesia.crimereport.Constants;
 import com.ganesia.crimereport.R;
-import com.ganesia.crimereport.R.id;
-import com.ganesia.crimereport.R.layout;
-import com.ganesia.crimereport.R.menu;
+import com.ganesia.crimereport.adapters.PlaceSuggestionsCursorAdapter;
+import com.ganesia.crimereport.fragments.SafetyRatingFragment;
 import com.ganesia.crimereport.fragments.TopCrimeFragment;
-import com.ganesia.crimereport.models.CrimeQueryResult;
 import com.ganesia.crimereport.models.CrimeItem;
+import com.ganesia.crimereport.models.CrimeQueryResult;
 import com.ganesia.crimereport.models.SafetyRating;
 import com.ganesia.crimereport.models.TopCrime;
-import com.ganesia.crimereport.providers.PlaceProvider;
 import com.ganesia.crimereport.webservices.CrimeInterface;
 import com.ganesia.crimereport.webservices.SafetyRatingInterface;
 import com.google.android.gms.maps.CameraUpdate;
@@ -47,12 +45,11 @@ import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 
-public class MainActivity extends FragmentActivity implements
-		LoaderCallbacks<Cursor> {
+public class MainActivity extends FragmentActivity {
 
 	private static final int ALT_HEATMAP_RADIUS = 20;
-	private static final int STATE_HOME = 0;
-	private static final int STATE_SEARCH = 1;
+	private static final int STATE_HOME = 1;
+	private static final int STATE_SEARCH = 2;
 
 	private RestAdapter mRestAdapter;
 	private CrimeQueryResult mCrimeQueryResult;
@@ -63,11 +60,14 @@ public class MainActivity extends FragmentActivity implements
 	private SearchView mSearchView;
 	private MenuItem mSearchMenuItem;
 	
-	private int mState = STATE_HOME;
+	private int mState;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		// Set state
+		mState = STATE_HOME;
 
 		// Set the User Interface
 		setContentView(R.layout.activity_main);
@@ -79,7 +79,7 @@ public class MainActivity extends FragmentActivity implements
 		// Setup the adapter
 		// Use Adapter from Retrofit Library
 		mRestAdapter = new RestAdapter.Builder().setEndpoint(
-				"http://crimedb.watchovermeapp.com:8080/crimereport/rs/data")
+				Constants.CRIME_API_ENDPOINT)
 				.build();
 
 		// Fetch data from API
@@ -106,13 +106,13 @@ public class MainActivity extends FragmentActivity implements
 	private void doSearch(String query) {
 		Bundle data = new Bundle();
 		data.putString("query", query);
-		getSupportLoaderManager().restartLoader(0, data, this);
+		// getSupportLoaderManager().restartLoader(0, data, this);
 	}
 
 	private void getPlace(String query) {
 		Bundle data = new Bundle();
 		data.putString("query", query);
-		getSupportLoaderManager().restartLoader(1, data, this);
+		// getSupportLoaderManager().restartLoader(1, data, this);
 	}
 
 	private void consumeReportAPI(String date) {
@@ -137,8 +137,6 @@ public class MainActivity extends FragmentActivity implements
 				if (mState == STATE_HOME) {
 					TopCrimeFragment topCrimeFrag = (TopCrimeFragment) getFragmentManager().findFragmentById(R.id.fragment_main);
 					topCrimeFrag.updateTopCrime(topCrimes);
-				} else {
-					Toast.makeText(getApplicationContext(), "Pindah", Toast.LENGTH_LONG).show();					
 				}
 			}
 		});
@@ -197,11 +195,9 @@ public class MainActivity extends FragmentActivity implements
 		getMenuInflater().inflate(R.menu.main, menu);
 
 		// Associate searchable configuration with the SearchView
-		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 		mSearchMenuItem = menu.findItem(R.id.action_search);
 		mSearchView = (SearchView) mSearchMenuItem.getActionView();
-		mSearchView.setSearchableInfo(searchManager
-				.getSearchableInfo(getComponentName()));
+		mSearchView.setSuggestionsAdapter(new PlaceSuggestionsCursorAdapter(this));
 		mSearchView.setOnQueryTextListener(new OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -213,6 +209,59 @@ public class MainActivity extends FragmentActivity implements
 
 			@Override
 			public boolean onQueryTextChange(String newText) {
+				return false;
+			}
+		});
+		mSearchView.setOnSuggestionListener(new OnSuggestionListener() {
+			
+			@Override
+			public boolean onSuggestionSelect(int position) {
+				return false;
+			}
+			
+			@Override
+			public boolean onSuggestionClick(int position) {
+				CursorAdapter adapter = mSearchView.getSuggestionsAdapter();
+				Cursor c = (Cursor) adapter.getItem(position);
+				
+				MarkerOptions markerOptions = null;
+				LatLng geoloc = null;
+
+				mMap.clear();
+				if (c != null) {
+					String name = c.getString(1);
+					double latitude = c.getDouble(4); // Latitude (in 4th column)
+					double longitude = c.getDouble(5); // Longitude (in 5th column)
+					geoloc = new LatLng(latitude, longitude);
+
+					markerOptions = new MarkerOptions();
+					markerOptions.position(geoloc);
+					markerOptions.title(name);
+					mMap.addMarker(markerOptions);
+				}
+
+				if (geoloc != null) {
+					CameraUpdate cameraPosition = CameraUpdateFactory
+							.newLatLng(geoloc);
+					mMap.animateCamera(cameraPosition);
+				}
+				
+				// Create fragment and give it an argument specifying the article it should show
+				Fragment newFragment = new SafetyRatingFragment();			
+				FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+				// Replace whatever is in the fragment_container view with this fragment,
+				// and add the transaction to the back stack so the user can navigate back
+				transaction.replace(R.id.fragment_main, newFragment);
+				transaction.addToBackStack(null);
+
+				// Commit the transaction
+				transaction.commit();
+
+				if (mSearchMenuItem != null) {
+					mSearchMenuItem.collapseActionView();
+				}
+				
 				return true;
 			}
 		});
@@ -230,57 +279,5 @@ public class MainActivity extends FragmentActivity implements
 			onSearchRequested();
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	public Loader<Cursor> onCreateLoader(int arg0, Bundle bundle) {
-		CursorLoader cLoader = null;
-		if (arg0 == 0) {
-			cLoader = new CursorLoader(getBaseContext(),
-					PlaceProvider.SEARCH_URI, null, null,
-					new String[] { bundle.getString("query") }, null);
-		} else if (arg0 == 1) {
-			cLoader = new CursorLoader(getBaseContext(),
-					PlaceProvider.DETAILS_URI, null, null,
-					new String[] { bundle.getString("query") }, null);
-		}
-		return cLoader;
-	}
-
-	@Override
-	public void onLoadFinished(Loader<Cursor> arg0, Cursor c) {
-		// Collapse search action bar
-		mSearchMenuItem.collapseActionView();
-
-		// Display on map
-		showLocations(c);
-	}
-
-	@Override
-	public void onLoaderReset(Loader<Cursor> arg0) {
-		// Do nothing
-	}
-
-	private void showLocations(Cursor c) {
-		MarkerOptions markerOptions = null;
-		LatLng position = null;
-
-		mMap.clear();
-		while (c.moveToNext()) {
-			double latitude = c.getDouble(2); // Latitude (in 2nd column)
-			double longitude = c.getDouble(3); // Longitude (in 3rd column)
-			position = new LatLng(latitude, longitude);
-
-			markerOptions = new MarkerOptions();
-			markerOptions.position(position);
-			markerOptions.title(c.getString(0));
-			mMap.addMarker(markerOptions);
-		}
-
-		if (position != null) {
-			CameraUpdate cameraPosition = CameraUpdateFactory
-					.newLatLng(position);
-			mMap.animateCamera(cameraPosition);
-		}
 	}
 }
