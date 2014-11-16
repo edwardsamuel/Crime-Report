@@ -57,7 +57,7 @@ public class CrimeItem {
 		String[] words = note.split(", ");
 		String arrest = words[1].split("arrest:")[1];
 		this.setArrest(Boolean.parseBoolean(arrest));
-		this.note = note;
+		this.note = words[0];
 	}
 	
 	/**

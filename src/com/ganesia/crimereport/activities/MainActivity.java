@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 import retrofit.Callback;
@@ -44,6 +45,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -61,13 +64,14 @@ public class MainActivity extends FragmentActivity {
 
 	private RestAdapter mRestAdapter;
 	private CrimeQueryResult mCrimeQueryResult;
-	private SafetyRating mSafetyRating;
 	
 	private GoogleMap mMap;
 	private TileOverlay mOverlay;
 	private HeatmapTileProvider mProvider;
 	private SearchView mSearchView;
 	private MenuItem mSearchMenuItem;
+	
+	private HashMap<Marker, CrimeItem> mCrimeMarkers;
 	
 	private int mState;
 
@@ -86,28 +90,31 @@ public class MainActivity extends FragmentActivity {
 		mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
 			
 			@Override
-			public View getInfoWindow(Marker arg0) {
+			public View getInfoWindow(Marker marker) {
 				return null;
 			}
 			
 			@Override
 			public View getInfoContents(Marker marker) {
-				View v  = getLayoutInflater().inflate(R.layout.infowindow_crime, null);
-
-				TextView markerTitle = (TextView) v.findViewById(R.id.tv_crime_title);
-		        TextView markerDetails = (TextView) v.findViewById(R.id.tv_crime_address);
-		        
-		        if (mSafetyRating != null) {
-		        	CrimeItem crime = mSafetyRating.getCrime(marker.getTitle());
-		        	if (crime != null) {
-				        markerTitle.setText(crime.getType());
-				        markerDetails.setText(crime.getCrimeAddress());	
-						return v;	        		
-		        	}
-		        }
-
-		        markerTitle.setText(marker.getTitle());
-		        markerDetails.setText(marker.getSnippet());
+				View v = null;
+				CrimeItem crime = mCrimeMarkers.get(marker);
+				
+				if (crime != null) {
+					v  = getLayoutInflater().inflate(R.layout.infowindow_crime, null);
+					
+					TextView markerTitle = (TextView) v.findViewById(R.id.tv_crime_title);
+					TextView markerCaseID = (TextView) v.findViewById(R.id.tv_crime_id);
+					TextView markerDate = (TextView) v.findViewById(R.id.tv_crime_date);
+			        TextView markerAddress = (TextView) v.findViewById(R.id.tv_crime_address);
+			        TextView markerNote = (TextView) v.findViewById(R.id.tv_crime_note);
+			        
+			        markerTitle.setText(crime.getCrimeType() + " - " + crime.getType());
+			        markerCaseID.setText(crime.getCrimeCaseID());
+			        markerDate.setText(new Date(crime.getCrimeDate()).toString());
+			        markerAddress.setText(crime.getCrimeAddress());
+			        markerNote.setText(crime.getNote());
+				}
+				
 				return v;
 			}
 		});
@@ -117,6 +124,9 @@ public class MainActivity extends FragmentActivity {
 		mRestAdapter = new RestAdapter.Builder()
 				.setEndpoint(Constants.CRIME_API_ENDPOINT)
 				.build();
+		
+		// Init map markers
+		mCrimeMarkers = new HashMap<Marker, CrimeItem>();
 
 		// Display crime in a city 
 		queryResult();
@@ -232,36 +242,88 @@ public class MainActivity extends FragmentActivity {
 			}
 
 			@Override
-			public void success(SafetyRating rating, Response response) {	
-				mMap.clear();
-				drawCrimesHeatmap(mCrimeQueryResult);
-				LatLngBounds.Builder bounds = LatLngBounds.builder();
+			public void success(SafetyRating rating, Response response) {
 				int count = 0;
-				
+				LatLngBounds.Builder bounds = LatLngBounds.builder();
 				Collection<ArrayList<CrimeItem>> c = rating.getNearestCrimeList().values();
+				
+				cleanCrimeMarkers();
 				for (ArrayList<CrimeItem> list : c) {
 					for (CrimeItem item : list) {
 						Log.d("SR_API", item.toString());
-						
-						LatLng location = new LatLng(item.getLatitude(), item.getLongitude());
-						bounds.include(location);
-						
-						MarkerOptions markerOptions = new MarkerOptions();
-						markerOptions.position(location);
-						markerOptions.title(item.getCrimeCaseID());
-
-						mMap.addMarker(markerOptions);
-						
+						Marker marker = addCrimeMarker(item);
+						bounds.include(marker.getPosition());
 						count++;
 					}
 				}
-								
+				
 				if (count > 0) {
-					mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50));
+					mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
 				}
 			}
 		});
 
+	}
+	
+	/***
+	 * Create new crime marker and add to maps
+	 * @param crime
+	 * @return The created marker
+	 */
+	private Marker addCrimeMarker(CrimeItem crime) {
+		LatLng location = new LatLng(crime.getLatitude(), crime.getLongitude());
+		
+		MarkerOptions markerOptions = new MarkerOptions();
+		markerOptions.position(location);
+		markerOptions.icon(getCrimeIcon(crime));
+		
+		Marker marker = mMap.addMarker(markerOptions);
+		mCrimeMarkers.put(marker, crime);
+		
+		return marker;
+	}
+	
+	/***
+	 * Remove all markers from map.
+	 */
+	private void cleanCrimeMarkers() {
+		for (Marker marker :  mCrimeMarkers.keySet()) {
+			marker.remove();
+		}
+		mCrimeMarkers.clear();
+	}
+	
+	/***
+	 * Get crime icon based on crime type
+	 * 
+	 * @param crime
+	 * @return
+	 */
+	private BitmapDescriptor getCrimeIcon(CrimeItem crime) {
+		switch (crime.getCrimeType()) {
+		case "HOMICIDE":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);	
+		case "THEFT":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE);	
+		case "BATTERY":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN);	
+		case "ROBBERY":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);	
+		case "NARCOTICS":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA);	
+		case "MOTOR VEHICLE THEFT":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE);	
+		case "ASSAULT":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE);	
+		case "CRIM SEXUAL ASSAULT":
+		case "PROSTITUTION":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);	
+		case "PUBLIC PEACE VIOLATION":
+		case "OFFENSE INVOLVING CHILDREN":
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);		
+		default:
+			return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+		}		
 	}
 
 	private void drawCrimesHeatmap(CrimeQueryResult queryResult) {
@@ -290,13 +352,6 @@ public class MainActivity extends FragmentActivity {
 	private void safetyRating(String name, double lat, double lng) {
 		LatLng location = new LatLng(lat, lng);
 		CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(location);
-
-		MarkerOptions markerOptions = new MarkerOptions();
-		markerOptions.position(location);
-		markerOptions.title(name);
-
-		mMap.clear();
-		mMap.addMarker(markerOptions);
 		mMap.animateCamera(cameraPosition);
 		
 		consumeSafetyRatingAPI(lat, lng);
