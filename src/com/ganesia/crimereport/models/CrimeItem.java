@@ -57,7 +57,7 @@ public class CrimeItem {
 		String[] words = note.split(", ");
 		String arrest = words[1].split("arrest:")[1];
 		this.setArrest(Boolean.parseBoolean(arrest));
-		this.note = note;
+		this.note = words[0];
 	}
 	
 	/**
@@ -229,6 +229,17 @@ public class CrimeItem {
 	 */
 	public void setArrest(Boolean arrest) {
 		this.arrest = arrest;
+	}
+
+	@Override
+	public String toString() {
+		return "CrimeItem [crimeCaseID=" + crimeCaseID + ", note=" + note
+				+ ", crimeAddress=" + crimeAddress + ", crimeReportDate="
+				+ crimeReportDate + ", latitude=" + latitude + ", timeZone="
+				+ timeZone + ", crimeDate=" + crimeDate + ", crimeType="
+				+ crimeType + ", longitude=" + longitude + ", type=" + type
+				+ ", additionalProperties=" + additionalProperties
+				+ ", arrest=" + arrest + "]";
 	}
 
 }
