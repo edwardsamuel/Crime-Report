@@ -3,31 +3,37 @@ package com.ganesia.crimereport.models;
 public class SafetyRatingItem {
 
 	String crimeType;
-	String crimeDate;
-	String crimeStatus;
+	String crimeArrestedNum;
+	String crimeWantedNum;
 	
-	public SafetyRatingItem(String crimeType, String crimeDate, String crimeStatus){
+	public SafetyRatingItem(String crimeType, String crimeArrestedNum, String crimeWantedNum){
 		this.crimeType = crimeType;
-		this.crimeStatus = crimeStatus;
-		this.crimeDate = crimeDate;
-	}
+		this.crimeArrestedNum = crimeArrestedNum;
+		this.crimeWantedNum = crimeWantedNum;
+	}	
 	
 	public String getCrimeType() {
 		return crimeType;
 	}
+
 	public void setCrimeType(String crimeType) {
 		this.crimeType = crimeType;
 	}
-	public String getCrimeDate() {
-		return crimeDate;
+
+	public String getCrimeArrestedNum() {
+		return crimeArrestedNum;
 	}
-	public void setCrimeDate(String crimeDate) {
-		this.crimeDate = crimeDate;
+
+	public void setCrimeArrestedNum(String crimeArrestedNum) {
+		this.crimeArrestedNum = crimeArrestedNum;
 	}
-	public String getCrimeStatus() {
-		return crimeStatus;
+
+	public String getCrimeWantedNum() {
+		return crimeWantedNum;
 	}
-	public void setCrimeStatus(String crimeStatus) {
-		this.crimeStatus = crimeStatus;
+
+	public void setCrimeWantedNum(String crimeWantedNum) {
+		this.crimeWantedNum = crimeWantedNum;
 	}
+	
 }

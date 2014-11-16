@@ -4,14 +4,13 @@
     <string name="app_name">Crime Report</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
     <string name="action_search">Search</string>
     <string name="search_hint">Search Places</string>
     <string name="search_settings">Search Places</string>
-
     <string name="top_crime">Top 3 Crimes Within 2 Weeks</string>
     <string name="crime_locations">Crime Locations in Chicago</string>
     <string name="crime_locations_url">http://data.gov.au/dataset/location-of-medicare-offices/resource/5d38e1be-4011-49c4-8b8b-75405eeb1088</string>
-    <string name="safety_rating">Safety Rating: DANGER</string>    
+    <string name="safety_rating">Safety Rating: DANGER</string>
+    <string name="title_activity_dummy">DummyActivity</string>
 
 </resources>

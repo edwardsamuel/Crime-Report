@@ -20,8 +20,8 @@ public class CustomListViewAdapter extends ArrayAdapter<SafetyRatingItem>{
 	
 	static class ViewHolder {
 		  public TextView txtCrimeType;
-		  public TextView txtCrimeDate;
-		  public TextView txtCrimeStatus;
+		  public TextView txtCrimeArrestedNum;
+		  public TextView txtCrimeWantedNum;
 		  public ImageView imgCrimeType;
 	}
 	
@@ -43,8 +43,8 @@ public class CustomListViewAdapter extends ArrayAdapter<SafetyRatingItem>{
 			// configure RecordHolder
 			ViewHolder viewHolder = new ViewHolder();
 			viewHolder.txtCrimeType = (TextView) row.findViewById(R.id.rating_crime_type);
-			viewHolder.txtCrimeDate = (TextView) row.findViewById(R.id.rating_crime_date);
-			viewHolder.txtCrimeStatus = (TextView) row.findViewById(R.id.rating_crime_status);
+			viewHolder.txtCrimeArrestedNum = (TextView) row.findViewById(R.id.rating_arrested_num);
+			viewHolder.txtCrimeWantedNum = (TextView) row.findViewById(R.id.rating_wanted_num);
 			viewHolder.imgCrimeType = (ImageView) row.findViewById(R.id.crime_icon);
 			row.setTag(viewHolder);			
 		}
@@ -53,13 +53,19 @@ public class CustomListViewAdapter extends ArrayAdapter<SafetyRatingItem>{
 		ViewHolder holder = (ViewHolder) row.getTag();
 		SafetyRatingItem safetyRatingItem = data.get(position);
 		holder.txtCrimeType.setText(safetyRatingItem.getCrimeType());
-		holder.txtCrimeDate.setText(safetyRatingItem.getCrimeDate());
-		holder.txtCrimeStatus.setText(safetyRatingItem.getCrimeStatus());
+		holder.txtCrimeArrestedNum.setText(safetyRatingItem.getCrimeArrestedNum());
+		holder.txtCrimeWantedNum.setText(safetyRatingItem.getCrimeWantedNum());
 		
 		switch(safetyRatingItem.getCrimeType()){
-		case "Robbery":
+		case "Offense Involving Children":
 			holder.imgCrimeType.setImageResource(R.drawable.ic_launcher);
-		
+			break;
+		case "Robbery":
+			holder.imgCrimeType.setImageResource(R.drawable.robbery);
+			break;
+		case "Theft":
+			holder.imgCrimeType.setImageResource(R.drawable.theft);
+			break;
 		}
 		
 		return row;

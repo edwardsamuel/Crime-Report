@@ -8,6 +8,8 @@ import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -29,11 +31,12 @@ import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.R.id;
 import com.ganesia.crimereport.R.layout;
 import com.ganesia.crimereport.R.menu;
+import com.ganesia.crimereport.fragments.SafetyRatingFragment;
 import com.ganesia.crimereport.fragments.TopCrimeFragment;
 import com.ganesia.crimereport.models.CrimeQueryResult;
 import com.ganesia.crimereport.models.CrimeItem;
 import com.ganesia.crimereport.models.SafetyRating;
-import com.ganesia.crimereport.models.TopCrime;
+import com.ganesia.crimereport.models.Tuple;
 import com.ganesia.crimereport.providers.PlaceProvider;
 import com.ganesia.crimereport.webservices.CrimeInterface;
 import com.ganesia.crimereport.webservices.SafetyRatingInterface;
@@ -131,7 +134,7 @@ public class MainActivity extends FragmentActivity implements
 				setHeatmap(mCrimeQueryResult);
 				
 				// pick the biggest three
-				ArrayList<TopCrime> topCrimes = new ArrayList<TopCrime>();
+				ArrayList<Tuple> topCrimes = new ArrayList<Tuple>();
 				topCrimes = queryResult.getTopThreeCrime();
 
 				if (mState == STATE_HOME) {
@@ -253,6 +256,7 @@ public class MainActivity extends FragmentActivity implements
 		mSearchMenuItem.collapseActionView();
 
 		// Display on map
+		mState = STATE_SEARCH;
 		showLocations(c);
 	}
 
@@ -282,5 +286,14 @@ public class MainActivity extends FragmentActivity implements
 					.newLatLng(position);
 			mMap.animateCamera(cameraPosition);
 		}
+		
+		SafetyRatingFragment safetyRatingFrag = new SafetyRatingFragment();
+		FragmentManager fm = getFragmentManager();
+		FragmentTransaction transaction = fm.beginTransaction();
+		transaction.replace(R.id.fragment_main, safetyRatingFrag);
+		transaction.addToBackStack(null);
+		transaction.commit();
+		Log.d("trans", "commit");
+		Log.d("trans", mState+"");
 	}
 }

@@ -3,14 +3,14 @@
     package="com.ganesia.crimereport"
     android:versionCode="1"
     android:versionName="1.0" >
-    
-	<uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-	<uses-permission android:name="com.google.maps.android.utils.permission.MAPS_RECEIVE"/>
-	
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="com.google.maps.android.utils.permission.MAPS_RECEIVE" />
+
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="22" />
@@ -21,13 +21,10 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.ganesia.crimereport.activities.MainActivity"
-            android:launchMode="singleTop"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:name=".activities.MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" >
+            
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
@@ -42,16 +39,28 @@
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable_main" />
         </activity>
+
         <provider
-            android:name="com.ganesia.crimereport.providers.PlaceProvider"
+            android:name=".providers.PlaceProvider"
             android:authorities="com.ganesia.crimereport.providers.PlaceProvider"
             android:exported="false" />
+
         <meta-data
-		    android:name="com.google.android.maps.v2.API_KEY"
-		    android:value="AIzaSyAHBFBSirrjeNO_by_iyrWeOrCmX7Jylm8"/>
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyAHBFBSirrjeNO_by_iyrWeOrCmX7Jylm8" />
         <meta-data
-		    android:name="com.google.android.gms.version"
-		    android:value="@integer/google_play_services_version" />
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name=".DummyActivity"
+            android:label="@string/title_activity_dummy" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

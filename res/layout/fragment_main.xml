@@ -29,6 +29,7 @@
         android:numColumns="auto_fit"
         android:stretchMode="columnWidth"
         android:textAlignment="center"
-        android:verticalSpacing="10dp" />
+        android:verticalSpacing="10dp"
+        android:listSelector="#00000000" />
     
 </LinearLayout>
