@@ -43,6 +43,7 @@ import com.ganesia.crimereport.models.TopCrime;
 import com.ganesia.crimereport.providers.PlaceProvider;
 import com.ganesia.crimereport.webservices.CrimeInterface;
 import com.ganesia.crimereport.webservices.SafetyRatingInterface;
+import com.ganesia.crimereport.services.BackgroundLocationService;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -73,6 +74,14 @@ LoaderCallbacks<Cursor> {
 	private MenuItem mSearchMenuItem;
 
 	private int mState = STATE_HOME;
+	
+	private Intent locationServiceIntent;
+
+	@Override
+	protected void onDestroy() {
+		getApplicationContext().stopService(locationServiceIntent);
+		super.onDestroy();
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,22 +89,27 @@ LoaderCallbacks<Cursor> {
 
 		// Set the User Interface
 		setContentView(R.layout.activity_main);
+		
+		// start and trigger a service
+        locationServiceIntent= new Intent(getApplicationContext(), BackgroundLocationService.class);
+        getApplicationContext().startService(locationServiceIntent);
+        
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(
 				R.id.fragment_map)).getMap();
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
 				Constants.CENTER_LATLNG, 10));
 		mMap.setMyLocationEnabled(true);
 
-		mMap.setOnMyLocationChangeListener(new OnMyLocationChangeListener() {
-
-			@Override
-			public void onMyLocationChange(Location arg0) {
-				double latitute = arg0.getLatitude();;
-				double longitude = arg0.getLongitude();
-				mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-						latitute, longitude), 14));
-			}
-		});
+//		mMap.setOnMyLocationChangeListener(new OnMyLocationChangeListener() {
+//
+//			@Override
+//			public void onMyLocationChange(Location arg0) {
+//				double latitute = arg0.getLatitude();
+//				double longitude = arg0.getLongitude();
+//				mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(
+//						latitute, longitude)));
+//			}
+//		});
 
 		mMap.setOnMyLocationButtonClickListener(new OnMyLocationButtonClickListener() {
 			@Override
@@ -121,7 +135,9 @@ LoaderCallbacks<Cursor> {
 				}else{
 					double latitute = mMap.getMyLocation().getLatitude();
 					double longitude = mMap.getMyLocation().getLongitude();
-					safetyRating("tes safety rating", latitute, longitude);
+					mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(
+							latitute, longitude)));
+					safetyRating("tes safety rating "+latitute+", "+ longitude, latitute, longitude);
 				}
 				return true;
 			}
