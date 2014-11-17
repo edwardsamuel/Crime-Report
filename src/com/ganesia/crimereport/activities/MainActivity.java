@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -46,6 +47,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMyLocationChangeListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
@@ -84,10 +86,20 @@ LoaderCallbacks<Cursor> {
 				Constants.CENTER_LATLNG, 10));
 		mMap.setMyLocationEnabled(true);
 
+		mMap.setOnMyLocationChangeListener(new OnMyLocationChangeListener() {
+
+			@Override
+			public void onMyLocationChange(Location arg0) {
+				double latitute = arg0.getLatitude();;
+				double longitude = arg0.getLongitude();
+				mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
+						latitute, longitude), 14));
+			}
+		});
+
 		mMap.setOnMyLocationButtonClickListener(new OnMyLocationButtonClickListener() {
 			@Override
 			public boolean onMyLocationButtonClick() {
-
 				// Get Location Manager and check for GPS & Network location services
 				LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
 				if(!lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
@@ -107,11 +119,8 @@ LoaderCallbacks<Cursor> {
 					alertDialog.setCanceledOnTouchOutside(false);
 					alertDialog.show();
 				}else{
-
 					double latitute = mMap.getMyLocation().getLatitude();
 					double longitude = mMap.getMyLocation().getLongitude();
-					mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
-							latitute, longitude), 10));
 					safetyRating("tes safety rating", latitute, longitude);
 				}
 				return true;
