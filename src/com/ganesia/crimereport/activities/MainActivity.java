@@ -1,9 +1,16 @@
 package com.ganesia.crimereport.activities;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -12,12 +19,16 @@ import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,15 +64,24 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 
 public class MainActivity extends FragmentActivity {
 
 	private static final int REPORT_DAYS = -14;
 	private static final int ALT_HEATMAP_RADIUS = 20;
+
 	private static final int STATE_HOME = 1;
 	private static final int STATE_SEARCH = 2;
 
+	private static final String MY_PREFS_NAME = "prefs_timestamp";
+	private static final String CACHE_CRIME_REPORT = "crimereport.json";
+	private static final String CACHE_HEATMAP = "heatmapdata.json";
+	
+	private static final long CACHE_EXPIRATION_INTERVAL = 3600000;
+	
 	private RestAdapter mRestAdapter;
 	private CrimeQueryResult mCrimeQueryResult;
 	
@@ -75,6 +95,9 @@ public class MainActivity extends FragmentActivity {
 	
 	private int mState;
 
+	private ArrayList<LatLng> mHeatmapData;
+	private ArrayList<TopCrime> mTopThreeCrime;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -128,11 +151,10 @@ public class MainActivity extends FragmentActivity {
 		// Init map markers
 		mCrimeMarkers = new HashMap<Marker, CrimeItem>();
 
-		// Display crime in a city 
-		queryResult();
+		// Read from 1-hour-old (in milis = 3600000) cache
+		readCache(CACHE_EXPIRATION_INTERVAL);
 	}
 	
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -194,11 +216,132 @@ public class MainActivity extends FragmentActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	/**
+	 * 	Create a cache consists of top three crime and heatmap position
+	 * 	The cache is saved on internal storage
+	 * 	The timestamp (in milis) of cache creation is saved on Shared Preference with Key:time
+	 */
+	private void createCache() {
+		Calendar c;
+		File fTopThreeCrime;			// cache file of Top Three Crime (TopCrime)
+		File fHeatmapPosition;			// cache file of Heatmap Position (ArrayList<LatLng>)
+		String jTopThreeCrime; 			// json String of Top Three Crime (Top Crime)
+		String jHeatmapPosition;		// json String of Heatmap Position (ArrayList<LatLng>)
+		FileOutputStream outputStream1;
+		FileOutputStream outputStream2;
+		SharedPreferences timeStamp;	// record cache's timestamp
+		// get current date
+		c = Calendar.getInstance();
 
+		// create the file
+		fTopThreeCrime = new File(getApplicationContext().getCacheDir(), CACHE_CRIME_REPORT);
+		fHeatmapPosition = new File(getApplicationContext().getCacheDir(), CACHE_HEATMAP);
+		
+		// prepare the JSON
+		Gson gson = new Gson();
+		jTopThreeCrime = gson.toJson(mTopThreeCrime);
+		jHeatmapPosition = gson.toJson(mHeatmapData);
+		
+		// write to the file
+		try {
+			outputStream1 = openFileOutput(CACHE_CRIME_REPORT, getApplicationContext().MODE_PRIVATE);
+			outputStream1.write(jTopThreeCrime.getBytes());
+			outputStream1.close();
+
+			outputStream2 = openFileOutput(CACHE_HEATMAP, getApplicationContext().MODE_PRIVATE);
+			outputStream2.write(jHeatmapPosition.getBytes());
+			outputStream2.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// record cache's timestamp
+		Activity a = MainActivity.this;
+		timeStamp = a.getSharedPreferences(MY_PREFS_NAME,Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = timeStamp.edit();
+		editor.putLong("CACHE_TIMESTAMP", c.getTimeInMillis());
+		editor.commit();
+	}
+	
+	private void readCache(long expiryIntervalInMilis) {
+		// read a cache and load it into application as long as cache's timestamp below expiryInterval
+		SharedPreferences timeStamp;
+		long cacheTimeInMilis;
+		long currentTimeInMilis;
+		String jTopThreeCrime	=""; 		// json String of Top Three Crime (Top Crime)
+		String jHeatmapPosition	="";		// json String of Heatmap Position (ArrayList<LatLng>)
+		// get current time
+		Calendar c = Calendar.getInstance();
+		currentTimeInMilis = c.getTimeInMillis();
+		
+		Activity a = MainActivity.this;
+		timeStamp = a.getSharedPreferences(MY_PREFS_NAME, Context.MODE_PRIVATE);
+		// default time is 0 if the cache is not present
+		cacheTimeInMilis = timeStamp.getLong("CACHE_TIMESTAMP", 0);
+		if (cacheTimeInMilis == 0) {
+			// cache is failed to load or has not been created yet
+			queryResult();
+		}
+		else if ((currentTimeInMilis - cacheTimeInMilis) < expiryIntervalInMilis) {
+			// read cache
+			// read Top Three Crime file
+			try {
+				FileInputStream fis = openFileInput(CACHE_CRIME_REPORT);
+				InputStreamReader inputStreamReader = new InputStreamReader(fis);
+				BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = bufferedReader.readLine()) != null) {
+					sb.append(line);
+				}
+				jTopThreeCrime = sb.toString();
+				inputStreamReader.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// read Heatmap Data file
+			try {
+				FileInputStream fis2 = openFileInput(CACHE_HEATMAP);
+				InputStreamReader inputStreamReader2 = new InputStreamReader(fis2);
+				BufferedReader bufferedReader2 = new BufferedReader(inputStreamReader2);
+				StringBuilder sb2 = new StringBuilder();
+				String line2;
+				while ((line2 = bufferedReader2.readLine()) != null) {
+					sb2.append(line2);
+				}
+				jHeatmapPosition = sb2.toString();
+				inputStreamReader2.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			loadCache(jTopThreeCrime, jHeatmapPosition);
+		}
+		else {
+			// cache has expired
+			// recall the query
+			queryResult();
+		}
+	}
+	
+	private void loadCache (String jsonTopThreeCrime, String jsonHeatmapPosition) {
+		// load cache from json String to Object
+		Gson gson = new Gson();
+		mHeatmapData = gson.fromJson(jsonHeatmapPosition, new TypeToken<ArrayList<LatLng>>(){}.getType());
+		drawCrimesHeatmap(mHeatmapData);
+		mTopThreeCrime = gson.fromJson(jsonTopThreeCrime, new TypeToken<ArrayList<TopCrime>>(){}.getType());
+		if (mState == STATE_HOME) {
+			TopCrimeFragment topCrimeFrag = (TopCrimeFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_main);
+			topCrimeFrag.updateTopCrime(mTopThreeCrime);
+		}
+	}
+	
 	private void consumeReportAPI(Date startDate) {
 		setProgressBarVisibility(true);
 		setProgressBarIndeterminate(true);
-		
 		CrimeInterface service = mRestAdapter.create(CrimeInterface.class);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 		service.getCrimeList(Constants.CITY, sdf.format(startDate), new Callback<CrimeQueryResult>() {
@@ -218,16 +361,17 @@ public class MainActivity extends FragmentActivity {
 				setProgressBarVisibility(false);
 				
 				mCrimeQueryResult = new CrimeQueryResult(queryResult);
-				drawCrimesHeatmap(mCrimeQueryResult);
+				mHeatmapData = mCrimeQueryResult.getLatLngData();
+				drawCrimesHeatmap(mHeatmapData);
 				
 				// pick the biggest three
-				ArrayList<TopCrime> topCrimes = new ArrayList<TopCrime>();
-				topCrimes = queryResult.getTopThreeCrime();
+				mTopThreeCrime = queryResult.getTopThreeCrime();
 
 				if (mState == STATE_HOME) {
 					TopCrimeFragment topCrimeFrag = (TopCrimeFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_main);
-					topCrimeFrag.updateTopCrime(topCrimes);
+					topCrimeFrag.updateTopCrime(mTopThreeCrime);
 				}
+				createCache();
 			}
 		});
 	}
@@ -250,7 +394,6 @@ public class MainActivity extends FragmentActivity {
 				cleanCrimeMarkers();
 				for (ArrayList<CrimeItem> list : c) {
 					for (CrimeItem item : list) {
-						Log.d("SR_API", item.toString());
 						Marker marker = addCrimeMarker(item);
 						bounds.include(marker.getPosition());
 						count++;
@@ -326,20 +469,24 @@ public class MainActivity extends FragmentActivity {
 		}		
 	}
 
-	private void drawCrimesHeatmap(CrimeQueryResult queryResult) {
-		// Generate heatmap on Google Maps
+	
+	/**
+	 * Generate heatmap on Google Maps
+	 * 
+	 * @param latLngData
+	 */
+	private void drawCrimesHeatmap(ArrayList<LatLng> latLngData) {
 		// Check if need to instantiate (avoid setData etc twice)
 		if (mProvider == null) {
-			mProvider = new HeatmapTileProvider.Builder().data(queryResult.getLatLngData()).build();
+			mProvider = new HeatmapTileProvider.Builder().data(latLngData).build();
 			mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
 			mProvider.setRadius(ALT_HEATMAP_RADIUS);
 		} else {
-			mProvider.setData(queryResult.getLatLngData());
+			mProvider.setData(latLngData);
 			mProvider.setRadius(ALT_HEATMAP_RADIUS);
 			mOverlay.clearTileCache();
 		}
 	}
-
 	
 	private void queryResult() {
 		Date now = new Date();
