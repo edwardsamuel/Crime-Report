@@ -11,19 +11,19 @@ import android.widget.GridView;
 
 import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.adapters.CustomGridViewAdapter;
-import com.ganesia.crimereport.models.TopCrime;
+import com.ganesia.crimereport.models.Tuple;
 
 public class TopCrimeFragment extends Fragment {
 	private GridView mGridView;
-	private ArrayList<TopCrime> mTopCrimeList;
+	private ArrayList<Tuple> mTopCrimeList;
 	private CustomGridViewAdapter mCustomGridViewAdapter;
 
 	public TopCrimeFragment() {
-		mTopCrimeList = new ArrayList<TopCrime>();
+		mTopCrimeList = new ArrayList<Tuple>();
 		// // initialize the mTopCrimeList
-		mTopCrimeList.add(new TopCrime("---", "0"));
-		mTopCrimeList.add(new TopCrime("---", "0"));
-		mTopCrimeList.add(new TopCrime("---", "0"));
+		mTopCrimeList.add(new Tuple("---", "0"));
+		mTopCrimeList.add(new Tuple("---", "0"));
+		mTopCrimeList.add(new Tuple("---", "0"));
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class TopCrimeFragment extends Fragment {
 		return vGridView;
 	}
 	
-	public void updateTopCrime(ArrayList<TopCrime> crimeList) {
+	public void updateTopCrime(ArrayList<Tuple> crimeList) {
 		mCustomGridViewAdapter.clear();
 		mCustomGridViewAdapter.addAll(crimeList);
 		mCustomGridViewAdapter.notifyDataSetChanged();

@@ -58,12 +58,12 @@ public class CrimeQueryResult {
 		return result;
 	}
 
-	public ArrayList<TopCrime> getTopThreeCrime() {
-		ArrayList<TopCrime> result = new ArrayList<TopCrime>();
+	public ArrayList<Tuple> getTopThreeCrime() {
+		ArrayList<Tuple> result = new ArrayList<Tuple>();
 		LinkedHashMap<String, Integer> listOfTopCrime = caluclateTopThreeCrime();
 		Collection<String> keySet = listOfTopCrime.keySet();
 		for (String k : keySet) {
-			TopCrime t = new TopCrime(k, listOfTopCrime.get(k).toString());
+			Tuple t = new Tuple(k, listOfTopCrime.get(k).toString());
 			result.add(t);
 		}
 		return result;

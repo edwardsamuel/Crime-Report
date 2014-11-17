@@ -5,12 +5,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -19,15 +17,15 @@ import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,7 +46,7 @@ import com.ganesia.crimereport.fragments.TopCrimeFragment;
 import com.ganesia.crimereport.models.CrimeItem;
 import com.ganesia.crimereport.models.CrimeQueryResult;
 import com.ganesia.crimereport.models.SafetyRating;
-import com.ganesia.crimereport.models.TopCrime;
+import com.ganesia.crimereport.models.Tuple;
 import com.ganesia.crimereport.webservices.CrimeInterface;
 import com.ganesia.crimereport.webservices.SafetyRatingInterface;
 import com.google.android.gms.maps.CameraUpdate;
@@ -96,7 +94,7 @@ public class MainActivity extends FragmentActivity {
 	private int mState;
 
 	private ArrayList<LatLng> mHeatmapData;
-	private ArrayList<TopCrime> mTopThreeCrime;
+	private ArrayList<Tuple> mTopThreeCrime;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -332,7 +330,7 @@ public class MainActivity extends FragmentActivity {
 		Gson gson = new Gson();
 		mHeatmapData = gson.fromJson(jsonHeatmapPosition, new TypeToken<ArrayList<LatLng>>(){}.getType());
 		drawCrimesHeatmap(mHeatmapData);
-		mTopThreeCrime = gson.fromJson(jsonTopThreeCrime, new TypeToken<ArrayList<TopCrime>>(){}.getType());
+		mTopThreeCrime = gson.fromJson(jsonTopThreeCrime, new TypeToken<ArrayList<Tuple>>(){}.getType());
 		if (mState == STATE_HOME) {
 			TopCrimeFragment topCrimeFrag = (TopCrimeFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_main);
 			topCrimeFrag.updateTopCrime(mTopThreeCrime);
@@ -511,12 +509,12 @@ public class MainActivity extends FragmentActivity {
 	}
 	
 	private void changeToSafetyReportFragment() {
-		Fragment newFragment = new SafetyRatingFragment();			
+		Fragment safetyRatingFrag = new SafetyRatingFragment();			
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
 		// Replace whatever is in the fragment_main view with this fragment,
 		// and add the transaction to the back stack so the user can navigate back
-		transaction.replace(R.id.fragment_main, newFragment);
+		transaction.replace(R.id.fragment_main, safetyRatingFrag);
 		transaction.addToBackStack(null);
 
 		// Commit the transaction
