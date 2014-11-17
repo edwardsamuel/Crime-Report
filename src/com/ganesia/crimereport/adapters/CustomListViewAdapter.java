@@ -57,8 +57,23 @@ public class CustomListViewAdapter extends ArrayAdapter<SafetyRatingItem>{
 		holder.txtCrimeWantedNum.setText(safetyRatingItem.getCrimeWantedNum());
 		
 		switch(safetyRatingItem.getCrimeType()){
+		case "Homicide":
+			holder.imgCrimeType.setImageResource(R.drawable.homicide);
+			break;
+		case "Kidnapping":
+			holder.imgCrimeType.setImageResource(R.drawable.kidnapping);
+			break;
+		case "Motor Vehicle Theft":
+			holder.imgCrimeType.setImageResource(R.drawable.vehicle_theft);
+			break;
+		case "Narcotics":
+			holder.imgCrimeType.setImageResource(R.drawable.narcotics);
+			break;			
 		case "Offense Involving Children":
-			holder.imgCrimeType.setImageResource(R.drawable.ic_launcher);
+			holder.imgCrimeType.setImageResource(R.drawable.involve_children);
+			break;
+		case "Prostitution":
+			holder.imgCrimeType.setImageResource(R.drawable.prostitution);
 			break;
 		case "Robbery":
 			holder.imgCrimeType.setImageResource(R.drawable.robbery);
