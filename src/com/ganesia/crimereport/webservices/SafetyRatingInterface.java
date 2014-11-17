@@ -9,5 +9,5 @@ import com.ganesia.crimereport.models.SafetyRating;
 public interface SafetyRatingInterface {
 	@GET("/safetyrating")
 	//<CrimeItem> groupList
-	void getSafetyRating(@Query("city") String city, @Query("lat") Double lat, @Query("lng") Double lng, Callback<SafetyRating> callback);
+	void getSafetyRating(@Query("city") String city, @Query("lat") double lat, @Query("lng") double lng, @Query("query") String query, Callback<SafetyRating> callback);
 }
