@@ -14,6 +14,7 @@
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="22" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -48,6 +49,8 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <receiver android:name="com.ganesia.crimereport.services.LocationReceiver" />
+    	<service android:name="com.ganesia.crimereport.services.BackgroundLocationService"/>
     </application>
 
 </manifest>

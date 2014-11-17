@@ -18,12 +18,19 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -49,13 +56,17 @@ import com.ganesia.crimereport.models.SafetyRating;
 import com.ganesia.crimereport.models.Tuple;
 import com.ganesia.crimereport.webservices.CrimeInterface;
 import com.ganesia.crimereport.webservices.SafetyRatingInterface;
+import com.ganesia.crimereport.services.BackgroundLocationService;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMyLocationChangeListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -82,20 +93,29 @@ public class MainActivity extends FragmentActivity {
 	
 	private RestAdapter mRestAdapter;
 	private CrimeQueryResult mCrimeQueryResult;
-	
+
 	private GoogleMap mMap;
 	private TileOverlay mOverlay;
 	private HeatmapTileProvider mProvider;
 	private SearchView mSearchView;
 	private MenuItem mSearchMenuItem;
+
+	private int mState = STATE_HOME;
 	
 	private HashMap<Marker, CrimeItem> mCrimeMarkers;
 	
 	private int mState;
+	private Intent locationServiceIntent;
 
 	private ArrayList<LatLng> mHeatmapData;
 	private ArrayList<Tuple> mTopThreeCrime;
 	
+	@Override
+	protected void onDestroy() {
+		getApplicationContext().stopService(locationServiceIntent);
+		super.onDestroy();
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -106,6 +126,11 @@ public class MainActivity extends FragmentActivity {
 		// Set the User Interface
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		setContentView(R.layout.activity_main);
+
+		// start and trigger a service
+        locationServiceIntent= new Intent(getApplicationContext(), BackgroundLocationService.class);
+        getApplicationContext().startService(locationServiceIntent);
+        
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
 		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Constants.CENTER_LATLNG, 10));
 		mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
@@ -137,6 +162,50 @@ public class MainActivity extends FragmentActivity {
 				}
 				
 				return v;
+			}
+		});
+		mMap.setMyLocationEnabled(true);
+
+//		mMap.setOnMyLocationChangeListener(new OnMyLocationChangeListener() {
+//
+//			@Override
+//			public void onMyLocationChange(Location arg0) {
+//				double latitute = arg0.getLatitude();
+//				double longitude = arg0.getLongitude();
+//				mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(
+//						latitute, longitude)));
+//			}
+//		});
+
+		mMap.setOnMyLocationButtonClickListener(new OnMyLocationButtonClickListener() {
+			@Override
+			public boolean onMyLocationButtonClick() {
+				// Get Location Manager and check for GPS & Network location services
+				LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
+				if(!lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+						!lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+					// Build the alert dialog
+					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+					alertDialogBuilder.setTitle("Location Services Not Active");
+					alertDialogBuilder.setMessage("Please enable Location Services and GPS");
+					alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialogInterface, int i) {
+							// Show location settings when the user acknowledges the alert dialog
+							Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+							startActivity(intent);
+						}
+					});
+					Dialog alertDialog = alertDialogBuilder.create();
+					alertDialog.setCanceledOnTouchOutside(false);
+					alertDialog.show();
+				}else{
+					double latitute = mMap.getMyLocation().getLatitude();
+					double longitude = mMap.getMyLocation().getLongitude();
+					mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(
+							latitute, longitude)));
+					safetyRating("tes safety rating "+latitute+", "+ longitude, latitute, longitude);
+				}
+				return true;
 			}
 		});
 
@@ -361,7 +430,7 @@ public class MainActivity extends FragmentActivity {
 				mCrimeQueryResult = new CrimeQueryResult(queryResult);
 				mHeatmapData = mCrimeQueryResult.getLatLngData();
 				drawCrimesHeatmap(mHeatmapData);
-				
+
 				// pick the biggest three
 				mTopThreeCrime = queryResult.getTopThreeCrime();
 
@@ -377,7 +446,7 @@ public class MainActivity extends FragmentActivity {
 	private void consumeSafetyRatingAPI(double lat, double lng) {
 		SafetyRatingInterface service = mRestAdapter.create(SafetyRatingInterface.class);
 		service.getSafetyRating(Constants.CITY, lat, lng, new Callback<SafetyRating>() {
-			
+
 			@Override
 			public void failure(RetrofitError error) {
 				Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
@@ -484,6 +553,7 @@ public class MainActivity extends FragmentActivity {
 			mProvider.setRadius(ALT_HEATMAP_RADIUS);
 			mOverlay.clearTileCache();
 		}
+
 	}
 	
 	private void queryResult() {
@@ -519,5 +589,9 @@ public class MainActivity extends FragmentActivity {
 
 		// Commit the transaction
 		transaction.commit();
+	}
+
+	private void safetyRating(String name, double lat, double lng) {
+		Toast.makeText(getApplicationContext(), name, Toast.LENGTH_LONG).show();
 	}
 }
