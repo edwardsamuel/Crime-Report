@@ -43,7 +43,7 @@ public class LocationReceiver extends BroadcastReceiver {
 
 		SharedPreferences sharedPref = context.getApplicationContext().getSharedPreferences("currentLocation", Context.MODE_PRIVATE);
 		lastNotifiedLocation = new LatLng(sharedPref.getFloat("latitute", 0), sharedPref.getFloat("longitude", 0));
-		Toast.makeText(context, "Location service", Toast.LENGTH_LONG).show();
+		
 		LatLng currentPosition = new LatLng(latitude, longitude);
 		double distance = HaversineDistance.calculateDistance(lastNotifiedLocation, currentPosition);
 		if( distance > 500){

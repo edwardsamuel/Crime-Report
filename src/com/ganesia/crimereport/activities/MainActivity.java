@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.TooManyListenersException;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -180,8 +179,7 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 					double longitude = mMap.getMyLocation().getLongitude();
 					mMap.animateCamera(CameraUpdateFactory
 							.newLatLng(new LatLng(latitute, longitude)));
-					safetyRating("tes safety rating " + latitute + ", "
-							+ longitude, latitute, longitude);
+					safetyRating("My Location", latitute, longitude);
 				}
 				return true;
 			}
@@ -449,7 +447,6 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 	}
 
 	private void manageService(boolean activate) {
-		Toast.makeText(this, "SERVICE: " + activate, Toast.LENGTH_LONG).show();
 		SharedPreferences pref = this.getSharedPreferences(MY_PREFS_NAME, Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = pref.edit();
 		editor.putBoolean(PREF_NAME_NOTIFICATION, activate);
