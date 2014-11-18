@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class SafetyRating {
-
+	
 	private String safetyRating;
 	private String safetyRatingDescription;
 	private String crimeReportDate;
@@ -161,6 +161,20 @@ public class SafetyRating {
 		this.longitude = longitude;
 	}
 
+	public int getSafetyStatus() {
+		String safetyRating = this.getSafetyRating();
+		switch(safetyRating) {
+			case "OK":
+				return 0;
+			case "MODERATE":
+				return 1;
+			case "DANGER":
+				return 2;
+			default:
+				return 0;
+		}
+	}
+	
 	public Map<String, Object> getAdditionalProperties() {
 		return this.additionalProperties;
 	}

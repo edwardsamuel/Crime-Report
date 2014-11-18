@@ -659,8 +659,12 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 		this.setTitle(title);
 
 		SafetyRatingFragment safetyRatingFrag = new SafetyRatingFragment();
+		
+		// Update rating
+		safetyRatingFrag.update(title, rating);
+		
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
+		
 		// Replace whatever is in the fragment_main view with this fragment,
 		// and add the transaction to the back stack so the user can navigate
 		// back
@@ -670,8 +674,6 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 		// Commit the transaction
 		transaction.commit();
 
-		// Update rating
-		safetyRatingFrag.update(title, rating);
 	}
 
 }
