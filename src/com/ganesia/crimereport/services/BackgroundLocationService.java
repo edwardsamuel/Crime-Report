@@ -1,8 +1,5 @@
 package com.ganesia.crimereport.services;
 
-import java.text.DateFormat;
-import java.util.Date;
-
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -98,7 +95,6 @@ public class BackgroundLocationService extends Service implements
         if(!mLocationClient.isConnected() || !mLocationClient.isConnecting() && !mInProgress)
         {
 //        	appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Started", GeofenceUtils.LOG_FILE);
-        	Log.d("Raymond", "Started atas");
         	mInProgress = true;
         	mLocationClient.connect();
         }
@@ -132,7 +128,7 @@ public class BackgroundLocationService extends Service implements
 	        mLocationClient = null;
         }
         // Display the connection status
-         Toast.makeText(this, DateFormat.getDateTimeInstance().format(new Date()) + ": Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
+         Toast.makeText(this, "location service disconnected.", Toast.LENGTH_SHORT).show();
 //        appendLog(DateFormat.getDateTimeInstance().format(new Date()) + ": Stopped", GeofenceUtils.LOG_FILE);
         Log.d("Raymond", "Stopped");
         super.onDestroy();  
