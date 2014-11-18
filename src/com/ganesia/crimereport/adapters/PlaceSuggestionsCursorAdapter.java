@@ -1,6 +1,7 @@
 package com.ganesia.crimereport.adapters;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.widget.SimpleCursorAdapter;
 
 import com.ganesia.crimereport.Constants;
 import com.ganesia.crimereport.R;
+import com.google.android.gms.maps.model.LatLng;
 
 public class PlaceSuggestionsCursorAdapter extends SimpleCursorAdapter {
 	
@@ -33,7 +35,12 @@ public class PlaceSuggestionsCursorAdapter extends SimpleCursorAdapter {
 	public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
 		try {
 			if (!TextUtils.isEmpty(constraint)) {
-				List<Address> addresses = getLocation(constraint.toString());
+				List<Address> addresses = new ArrayList<Address>();
+				for (Address address : getLocation(constraint.toString())) {
+					if (isInsideBounds(address)) {
+						addresses.add(address);
+					}
+				}
 				return new SuggestionsCursor(addresses);
 			}
 		} catch (IOException e) {
@@ -54,8 +61,12 @@ public class PlaceSuggestionsCursorAdapter extends SimpleCursorAdapter {
 	private List<Address> getLocation(String query) throws IOException {
 		Geocoder gc = new Geocoder(mContext);
 		return gc.getFromLocationName(query, MAX_RESULTS,
-				Constants.SE_LATITUDE, Constants.NW_LONGITUDE,
-				Constants.NW_LATITUDE, Constants.SE_LONGITUDE);
+				Constants.S_LATITUDE, Constants.W_LONGITUDE,
+				Constants.N_LATITUDE, Constants.E_LONGITUDE);
+	}
+	
+	private static boolean isInsideBounds(Address address) {
+		return Constants.LATLNG_BOUNDS.contains(new LatLng(address.getLatitude(), address.getLongitude()));
 	}
 	
 	private static class SuggestionsCursor extends AbstractCursor {

@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.ganesia.crimereport.R;
 import com.ganesia.crimereport.adapters.CustomListViewAdapter;
 import com.ganesia.crimereport.adapters.TotalAverageAdapter;
+import com.ganesia.crimereport.models.SafetyRating;
 import com.ganesia.crimereport.models.SafetyRatingItem;
 import com.ganesia.crimereport.models.Tuple;
 
@@ -30,6 +31,9 @@ public class SafetyRatingFragment extends Fragment {
 	private static final int STATUS_SAFE = 0;
 	private static final int STATUS_DANGER = 1;
 	private int mSafetyState;
+	
+	private String mTitle; 
+	private SafetyRating mSafetyRating;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -69,7 +73,19 @@ public class SafetyRatingFragment extends Fragment {
 		
 		
 		return safetyRatingView;
-		
+	}
+	
+	public SafetyRating getSafetyRating() {
+		return mSafetyRating;
+	}
+	
+	public String getTitle() {
+		return mTitle;
+	}
+	
+	public void update(String title, SafetyRating rating) {
+		mTitle = title;
+		mSafetyRating = rating;
 	}
 
 }
