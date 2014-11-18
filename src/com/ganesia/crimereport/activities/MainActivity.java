@@ -385,6 +385,8 @@ public class MainActivity extends FragmentActivity {
 
 			@Override
 			public void success(SafetyRating rating, Response response) {
+				changeToSafetyReportFragment(rating);
+				
 				int count = 0;
 				LatLngBounds.Builder bounds = LatLngBounds.builder();
 				Collection<ArrayList<CrimeItem>> c = rating.getNearestCrimeList().values();
@@ -501,17 +503,20 @@ public class MainActivity extends FragmentActivity {
 		
 		consumeSafetyRatingAPI(lat, lng);
 		
-		changeToSafetyReportFragment();
 		mSearchMenuItem.collapseActionView();
 		mState = STATE_SEARCH;
 
 		Toast.makeText(getApplicationContext(), name, Toast.LENGTH_LONG).show();
 	}
 	
-	private void changeToSafetyReportFragment() {
-		Fragment safetyRatingFrag = new SafetyRatingFragment();			
+	private void changeToSafetyReportFragment(SafetyRating rating) {
+		SafetyRatingFragment safetyRatingFrag = new SafetyRatingFragment();			
+		
+		// Update rating
+		safetyRatingFrag.update(rating);
+		
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
+		
 		// Replace whatever is in the fragment_main view with this fragment,
 		// and add the transaction to the back stack so the user can navigate back
 		transaction.replace(R.id.fragment_main, safetyRatingFrag);
@@ -519,5 +524,15 @@ public class MainActivity extends FragmentActivity {
 
 		// Commit the transaction
 		transaction.commit();
+	
+//		while(!safetyRatingFrag.isAdded()){
+//			try {
+//				Thread.sleep(100);
+//			} catch (InterruptedException e) {				
+//				e.printStackTrace();
+//			}
+//		}
+//		
+		
 	}
 }
