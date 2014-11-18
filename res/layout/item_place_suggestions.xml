@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="?android:attr/listPreferredItemPaddingLeft"
+    android:paddingBottom="?android:attr/listPreferredItemPaddingRight"
+    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:background="@android:color/background_light"
+    >
+    
+    <ImageView 
+        android:id="@+id/ic_place"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_centerVertical="true"
+        />
+    
+    <TextView 
+        android:id="@+id/tv_suggestion_title_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/ic_place"
+        android:layout_toEndOf="@id/ic_place"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        />
+
+    <TextView 
+        android:id="@+id/tv_suggestion_title_2"
+        android:layout_toRightOf="@id/ic_place"
+        android:layout_toEndOf="@id/ic_place"
+        android:layout_below="@id/tv_suggestion_title_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        />
+    
+</RelativeLayout>

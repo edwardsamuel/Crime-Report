@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SLIDING LAYOUT -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="false"
+    android:id="@+id/dragView"
+    android:background="#FFFFFF" >
+    
+    <TextView
+        android:id="@+id/safety_status"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="@string/safety_rating"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:background="#C90C0C"
+        android:textColor="#FFFFFF" />
+
+    <GridView
+        android:id="@+id/gridview_rating"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@layout/border_set"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:gravity="center_horizontal"
+        android:horizontalSpacing="10dp"
+        android:longClickable="false"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:textAlignment="center"
+        android:verticalSpacing="10dp"
+        android:listSelector="#00000000" />
+
+    <TextView
+        android:id="@+id/specific_time"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical"
+        android:paddingLeft="80dp"
+        android:text="Crimes at 8PM-10PM"
+        android:textColor="#717171"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+    
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="#FFFFFF"
+        android:headerDividersEnabled="true" />
+    
+</LinearLayout>
