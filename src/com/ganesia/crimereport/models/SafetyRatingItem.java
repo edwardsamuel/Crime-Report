@@ -2,9 +2,9 @@ package com.ganesia.crimereport.models;
 
 public class SafetyRatingItem {
 
-	String crimeType;
-	String crimeArrestedNum;
-	String crimeWantedNum;
+	private String crimeType;
+	private String crimeArrestedNum;
+	private String crimeWantedNum;
 	
 	public SafetyRatingItem(String crimeType, String crimeArrestedNum, String crimeWantedNum){
 		this.crimeType = crimeType;

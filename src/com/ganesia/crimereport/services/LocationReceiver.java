@@ -51,7 +51,7 @@ public class LocationReceiver extends BroadcastReceiver {
     
     private void consumeSafetyRatingAPI(final Context context, double lat, double lng) {
 		SafetyRatingInterface service = mRestAdapter.create(SafetyRatingInterface.class);
-		service.getSafetyRating(Constants.CITY, lat, lng, new Callback<SafetyRating>() {
+		service.getSafetyRating(Constants.CITY, lat, lng, "My location", new Callback<SafetyRating>() {
 
 			@Override
 			public void failure(RetrofitError arg0) {

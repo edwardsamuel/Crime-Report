@@ -28,12 +28,15 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentManager.OnBackStackChangedListener;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -77,7 +80,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements InfoWindowAdapter {
 
 	private static final int REPORT_DAYS = -14;
 	private static final int ALT_HEATMAP_RADIUS = 20;
@@ -100,8 +103,6 @@ public class MainActivity extends FragmentActivity {
 	private SearchView mSearchView;
 	private MenuItem mSearchMenuItem;
 
-	private int mState = STATE_HOME;
-	
 	private HashMap<Marker, CrimeItem> mCrimeMarkers;
 	
 	private int mState;
@@ -122,7 +123,7 @@ public class MainActivity extends FragmentActivity {
 		
 		// Set state
 		mState = STATE_HOME;
-
+		
 		// Set the User Interface
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		setContentView(R.layout.activity_main);
@@ -132,38 +133,8 @@ public class MainActivity extends FragmentActivity {
         getApplicationContext().startService(locationServiceIntent);
         
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
-		mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(Constants.CENTER_LATLNG, 10));
-		mMap.setInfoWindowAdapter(new InfoWindowAdapter() {
-			
-			@Override
-			public View getInfoWindow(Marker marker) {
-				return null;
-			}
-			
-			@Override
-			public View getInfoContents(Marker marker) {
-				View v = null;
-				CrimeItem crime = mCrimeMarkers.get(marker);
-				
-				if (crime != null) {
-					v  = getLayoutInflater().inflate(R.layout.infowindow_crime, null);
-					
-					TextView markerTitle = (TextView) v.findViewById(R.id.tv_crime_title);
-					TextView markerCaseID = (TextView) v.findViewById(R.id.tv_crime_id);
-					TextView markerDate = (TextView) v.findViewById(R.id.tv_crime_date);
-			        TextView markerAddress = (TextView) v.findViewById(R.id.tv_crime_address);
-			        TextView markerNote = (TextView) v.findViewById(R.id.tv_crime_note);
-			        
-			        markerTitle.setText(crime.getCrimeType() + " - " + crime.getType());
-			        markerCaseID.setText(crime.getCrimeCaseID());
-			        markerDate.setText(new Date(crime.getCrimeDate()).toString());
-			        markerAddress.setText(crime.getCrimeAddress());
-			        markerNote.setText(crime.getNote());
-				}
-				
-				return v;
-			}
-		});
+		mMap.setInfoWindowAdapter(this);
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(Constants.CENTER_LATLNG, 10));
 		mMap.setMyLocationEnabled(true);
 
 //		mMap.setOnMyLocationChangeListener(new OnMyLocationChangeListener() {
@@ -283,6 +254,54 @@ public class MainActivity extends FragmentActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+		
+	@Override
+	public void onBackPressed() {
+		super.onBackPressed();
+
+		Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_main);
+	    if (fragment != null) {
+	    	if (fragment instanceof SafetyRatingFragment) {
+		    	SafetyRatingFragment safetyRatingFragment = (SafetyRatingFragment) fragment;
+	    		this.setTitle(safetyRatingFragment.getTitle());
+		    	drawCrimeMarkers(safetyRatingFragment.getSafetyRating());
+	    	} else if (fragment instanceof TopCrimeFragment) {
+	    		mState = STATE_HOME;
+	    		this.setTitle(R.string.app_name);
+	    		cleanCrimeMarkers();
+	    		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(Constants.CENTER_LATLNG, 10));	    		
+	    	}
+	    }
+	}
+	
+	@Override
+	public View getInfoWindow(Marker marker) {
+		return null;
+	}
+	
+	@Override
+	public View getInfoContents(Marker marker) {
+		View v = null;
+		CrimeItem crime = mCrimeMarkers.get(marker);
+		
+		if (crime != null) {
+			v  = getLayoutInflater().inflate(R.layout.infowindow_crime, null);
+			
+			TextView markerTitle = (TextView) v.findViewById(R.id.tv_crime_title);
+			TextView markerDate = (TextView) v.findViewById(R.id.tv_crime_date);
+	        TextView markerAddress = (TextView) v.findViewById(R.id.tv_crime_address);
+	        TextView markerArrested = (TextView) v.findViewById(R.id.tv_crime_arrested);
+	        TextView markerNote = (TextView) v.findViewById(R.id.tv_crime_note);
+	        
+	        markerTitle.setText(crime.getCrimeType() + " - " + crime.getType());
+	        markerDate.setText(new Date(crime.getCrimeDate()).toString());
+	        markerAddress.setText(crime.getCrimeAddress());
+	        markerArrested.setText(crime.isArrest() ? "Yes" : "No");
+	        markerNote.setText(crime.getNote());
+		}
+		
+		return v;
+	}
 	
 	/**
 	 * 	Create a cache consists of top three crime and heatmap position
@@ -312,11 +331,11 @@ public class MainActivity extends FragmentActivity {
 		
 		// write to the file
 		try {
-			outputStream1 = openFileOutput(CACHE_CRIME_REPORT, getApplicationContext().MODE_PRIVATE);
+			outputStream1 = openFileOutput(CACHE_CRIME_REPORT, Context.MODE_PRIVATE);
 			outputStream1.write(jTopThreeCrime.getBytes());
 			outputStream1.close();
 
-			outputStream2 = openFileOutput(CACHE_HEATMAP, getApplicationContext().MODE_PRIVATE);
+			outputStream2 = openFileOutput(CACHE_HEATMAP, Context.MODE_PRIVATE);
 			outputStream2.write(jHeatmapPosition.getBytes());
 			outputStream2.close();
 		} catch (Exception e) {
@@ -325,8 +344,7 @@ public class MainActivity extends FragmentActivity {
 		}
 		
 		// record cache's timestamp
-		Activity a = MainActivity.this;
-		timeStamp = a.getSharedPreferences(MY_PREFS_NAME,Context.MODE_PRIVATE);
+		timeStamp = this.getSharedPreferences(MY_PREFS_NAME,Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = timeStamp.edit();
 		editor.putLong("CACHE_TIMESTAMP", c.getTimeInMillis());
 		editor.commit();
@@ -337,8 +355,8 @@ public class MainActivity extends FragmentActivity {
 		SharedPreferences timeStamp;
 		long cacheTimeInMilis;
 		long currentTimeInMilis;
-		String jTopThreeCrime	=""; 		// json String of Top Three Crime (Top Crime)
-		String jHeatmapPosition	="";		// json String of Heatmap Position (ArrayList<LatLng>)
+		String jTopThreeCrime	= ""; 		// json String of Top Three Crime (Top Crime)
+		String jHeatmapPosition	= "";		// json String of Heatmap Position (ArrayList<LatLng>)
 		// get current time
 		Calendar c = Calendar.getInstance();
 		currentTimeInMilis = c.getTimeInMillis();
@@ -443,9 +461,9 @@ public class MainActivity extends FragmentActivity {
 		});
 	}
 
-	private void consumeSafetyRatingAPI(double lat, double lng) {
+	private void consumeSafetyRatingAPI(double lat, double lng, String query) {
 		SafetyRatingInterface service = mRestAdapter.create(SafetyRatingInterface.class);
-		service.getSafetyRating(Constants.CITY, lat, lng, new Callback<SafetyRating>() {
+		service.getSafetyRating(Constants.CITY, lat, lng, query, new Callback<SafetyRating>() {
 
 			@Override
 			public void failure(RetrofitError error) {
@@ -454,25 +472,34 @@ public class MainActivity extends FragmentActivity {
 
 			@Override
 			public void success(SafetyRating rating, Response response) {
-				int count = 0;
-				LatLngBounds.Builder bounds = LatLngBounds.builder();
-				Collection<ArrayList<CrimeItem>> c = rating.getNearestCrimeList().values();
+				Uri uri = Uri.parse(response.getUrl());
+				String title = uri.getQueryParameter("query");
 				
-				cleanCrimeMarkers();
-				for (ArrayList<CrimeItem> list : c) {
-					for (CrimeItem item : list) {
-						Marker marker = addCrimeMarker(item);
-						bounds.include(marker.getPosition());
-						count++;
-					}
-				}
-				
-				if (count > 0) {
-					mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
-				}
+				changeToSafetyReportFragment(title, rating);
+				drawCrimeMarkers(rating);
 			}
 		});
-
+	}
+	
+	private void drawCrimeMarkers(SafetyRating rating) {		
+		int count = 0;
+		LatLngBounds.Builder bounds = LatLngBounds.builder();
+		Collection<ArrayList<CrimeItem>> c = rating.getTrendingCrimeAroundUserTimedate(6 * 3600 * 1000).values();
+		
+		cleanCrimeMarkers();
+		for (ArrayList<CrimeItem> list : c) {
+			for (CrimeItem item : list) {
+				Marker marker = addCrimeMarker(item);
+				bounds.include(marker.getPosition());
+				count++;
+			}
+		}
+		
+		if (count > 0) {
+			mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 100));
+		} else {
+			Toast.makeText(getApplicationContext(), "No crime data are found.", Toast.LENGTH_LONG).show();;
+		}
 	}
 	
 	/***
@@ -557,11 +584,9 @@ public class MainActivity extends FragmentActivity {
 	}
 	
 	private void queryResult() {
-		Date now = new Date();
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(now);
-		calendar.add(Calendar.DATE, REPORT_DAYS);
-		consumeReportAPI(calendar.getTime());
+		Calendar now = Calendar.getInstance();
+		now.add(Calendar.DATE, REPORT_DAYS);
+		consumeReportAPI(now.getTime());
 	}
 	
 	private void safetyRating(String name, double lat, double lng) {
@@ -569,17 +594,16 @@ public class MainActivity extends FragmentActivity {
 		CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(location);
 		mMap.animateCamera(cameraPosition);
 		
-		consumeSafetyRatingAPI(lat, lng);
+		consumeSafetyRatingAPI(lat, lng, name);
 		
-		changeToSafetyReportFragment();
 		mSearchMenuItem.collapseActionView();
 		mState = STATE_SEARCH;
-
-		Toast.makeText(getApplicationContext(), name, Toast.LENGTH_LONG).show();
 	}
 	
-	private void changeToSafetyReportFragment() {
-		Fragment safetyRatingFrag = new SafetyRatingFragment();			
+	private void changeToSafetyReportFragment(String title, SafetyRating rating) {
+		this.setTitle(title);
+		
+		SafetyRatingFragment safetyRatingFrag = new SafetyRatingFragment();
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
 		// Replace whatever is in the fragment_main view with this fragment,
@@ -589,9 +613,10 @@ public class MainActivity extends FragmentActivity {
 
 		// Commit the transaction
 		transaction.commit();
+		
+		// Update rating
+		safetyRatingFrag.update(title, rating);
 	}
-
-	private void safetyRating(String name, double lat, double lng) {
-		Toast.makeText(getApplicationContext(), name, Toast.LENGTH_LONG).show();
-	}
+	
+	
 }
