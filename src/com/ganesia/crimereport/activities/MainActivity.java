@@ -221,15 +221,15 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 			v  = getLayoutInflater().inflate(R.layout.infowindow_crime, null);
 			
 			TextView markerTitle = (TextView) v.findViewById(R.id.tv_crime_title);
-			TextView markerCaseID = (TextView) v.findViewById(R.id.tv_crime_id);
 			TextView markerDate = (TextView) v.findViewById(R.id.tv_crime_date);
 	        TextView markerAddress = (TextView) v.findViewById(R.id.tv_crime_address);
+	        TextView markerArrested = (TextView) v.findViewById(R.id.tv_crime_arrested);
 	        TextView markerNote = (TextView) v.findViewById(R.id.tv_crime_note);
 	        
 	        markerTitle.setText(crime.getCrimeType() + " - " + crime.getType());
-	        markerCaseID.setText(crime.getCrimeCaseID());
 	        markerDate.setText(new Date(crime.getCrimeDate()).toString());
 	        markerAddress.setText(crime.getCrimeAddress());
+	        markerArrested.setText(crime.isArrest() ? "Yes" : "No");
 	        markerNote.setText(crime.getNote());
 		}
 		
