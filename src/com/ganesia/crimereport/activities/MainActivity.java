@@ -130,9 +130,6 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 		editor.putFloat("longitude", 0);
 		editor.commit();
 		
-		// start and trigger a service
-		locationServiceIntent = new Intent(getApplicationContext(), BackgroundLocationService.class);
-		getApplicationContext().startService(locationServiceIntent);
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
 		mMap.setInfoWindowAdapter(this);
 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
@@ -458,7 +455,15 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 		editor.putBoolean(PREF_NAME_NOTIFICATION, activate);
 		editor.apply();
 		
-		// TODO Activate/Deactivate Service
+		if (activate) {
+			// start and trigger a service
+			locationServiceIntent = new Intent(getApplicationContext(), BackgroundLocationService.class);
+			getApplicationContext().startService(locationServiceIntent);
+		}else{
+			if(locationServiceIntent != null){
+				getApplicationContext().stopService(locationServiceIntent);
+			}
+		}
 	}
 
 	private void consumeReportAPI(Date startDate) {
