@@ -584,36 +584,31 @@ public class MainActivity extends FragmentActivity implements InfoWindowAdapter 
 		switch (crime.getCrimeType()) {
 		case "HOMICIDE":
 			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
-		case "THEFT":
-			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_BLUE);
-		case "BATTERY":
-			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_CYAN);
-		case "ROBBERY":
-			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
-		case "NARCOTICS":
-			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA);
-		case "MOTOR VEHICLE THEFT":
-			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE);
-		case "ASSAULT":
-			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_ROSE);
-		case "CRIM SEXUAL ASSAULT":
-		case "PROSTITUTION":
-			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);
-		case "PUBLIC PEACE VIOLATION":
+					.defaultMarker(BitmapDescriptorFactory.HUE_RED);
 		case "OFFENSE INVOLVING CHILDREN":
 			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW);
+					.defaultMarker(BitmapDescriptorFactory.HUE_ROSE);
+		case "KIDNAPPING":
+			return BitmapDescriptorFactory
+					.defaultMarker(180);
+		case "NARCOTICS":
+			return BitmapDescriptorFactory
+					.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE);
+		case "PROSTITUTION":
+			return BitmapDescriptorFactory
+					.defaultMarker(310);
+		case "ROBBERY":
+			return BitmapDescriptorFactory
+					.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);
+		case "THEFT":
+			return BitmapDescriptorFactory
+					.defaultMarker(350);
+		case "MOTOR VEHICLE THEFT":
+			return BitmapDescriptorFactory
+					.defaultMarker(165);
 		default:
 			return BitmapDescriptorFactory
-					.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+					.defaultMarker(BitmapDescriptorFactory.HUE_BLUE);
 		}
 	}
 
